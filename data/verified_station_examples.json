@@ -1,0 +1,46 @@
+{
+  "Rajahmundry": [
+    {
+      "name": "RenEV Charging Station",
+      "address": "KVR Swamy Rd, Mangalavaripeta, Rajamahendravaram, Andhra Pradesh 533101, India",
+      "place_id": "ChIJ9R-ed-qlNzoRan9RxT4-GfI"
+    },
+    {
+      "name": "Ather Grid Charging Station",
+      "address": "Aditya Nagar, Rajamahendravaram, Andhra Pradesh 533103, India",
+      "place_id": "ChIJC7fqyZejNzoRu3ao3oxS5c8"
+    },
+    {
+      "name": "Kia Charging Station",
+      "address": "Central Jail Rd, Bhaskar Nagar, Rajamahendravaram, Andhra Pradesh 533105, India",
+      "place_id": "ChIJg97IC96jNzoR7ivUqsmTxxo"
+    },
+    {
+      "name": "Electric Vehicle Charging Station",
+      "address": "Arts College Road, Police Quarters, Rajamahendravaram, Andhra Pradesh 533105, India",
+      "place_id": "ChIJh5PyamSjNzoRq1jOfUb8wRc"
+    }
+  ],
+  "Vijayawada": [
+    {
+      "name": "TETRA Charging Station",
+      "address": "MG Rd, Labbipet, Vijayawada, Andhra Pradesh 520010, India",
+      "place_id": "ChIJbangkvz7NToRTNT6tJlmLY0"
+    },
+    {
+      "name": "Statiq Charging Station",
+      "address": "MG Rd, Governor Peta, Vijayawada, Andhra Pradesh 520002, India",
+      "place_id": "ChIJlwBzZh3wNToRpLuzAO-brZo"
+    },
+    {
+      "name": "ThunderPlus Charging Station",
+      "address": "Gollapudi, Vijayawada, Andhra Pradesh 521225, India",
+      "place_id": "ChIJo9F57ovuNToR2EWM4rnrQIM"
+    },
+    {
+      "name": "Tata Power Charging Station",
+      "address": "MG Rd, Labbipet, Vijayawada, Andhra Pradesh 520010, India",
+      "place_id": "ChIJ66Pjea_6NToREvV0-wdkS2U"
+    }
+  ]
+}
