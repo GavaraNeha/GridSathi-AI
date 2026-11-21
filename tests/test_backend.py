@@ -1,13 +1,18 @@
 """
 GridSathi AI — Backend Test Suite (OpenStreetMap Edition)
 Automated regression tests for FastAPI endpoints, Nominatim geocoding,
-Overpass caching, input validation, and legacy prototype fallback.
+Overpass multi-mirror failover, error handling, mock fixtures, input validation,
+data isolation, and legacy prototype fallback.
 """
 
+import json
 import os
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import AsyncMock, patch
+
+import httpx
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -15,6 +20,10 @@ if str(ROOT) not in sys.path:
 
 from fastapi.testclient import TestClient
 from backend.main import app, rate_limiter, cache_manager, SimpleRateLimiter
+
+FIXTURES_PATH = ROOT / "tests" / "fixtures" / "osm_mock_responses.json"
+with open(FIXTURES_PATH, "r", encoding="utf-8") as f:
+    OSM_MOCKS = json.load(f)
 
 
 class TestGridSathiBackend(unittest.TestCase):
@@ -24,6 +33,8 @@ class TestGridSathiBackend(unittest.TestCase):
 
     def setUp(self):
         rate_limiter.clients.clear()
+        cache_manager.stations.clear()
+        cache_manager.last_overpass_time = 0.0
 
     def test_health_check(self):
         """Verify service health endpoint and OSM provider status."""
@@ -122,6 +133,117 @@ class TestGridSathiBackend(unittest.TestCase):
             res = self.client.get(f"/{asset}")
             self.assertEqual(res.status_code, 200, f"Failed serving {asset}")
             self.assertGreater(len(res.content), 50)
+
+    # ==========================================================================
+    # Overpass Multi-Mirror Failover & Error Resilience Regression Tests
+    # ==========================================================================
+
+    @patch("httpx.AsyncClient.post", new_callable=AsyncMock)
+    def test_overpass_mock_200_valid_stations(self, mock_post):
+        """Verify successful Overpass query maps OSM tags to StationListing models."""
+        mock_post.return_value = httpx.Response(200, json=OSM_MOCKS["http_200_valid_stations"])
+        res = self.client.get("/api/stations?city=Hyderabad")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["mode"], "osm-overpass-live-search")
+        self.assertEqual(data["total"], 2)
+        self.assertEqual(len(data["stations"]), 2)
+
+        s1 = data["stations"][0]
+        self.assertEqual(s1["name"], "Tata Power EZ Charge - Abids")
+        self.assertEqual(s1["operator"], "Tata Power")
+        self.assertEqual(s1["capacity"], "4")
+        self.assertIn("Type2 Combo", s1["sockets"])
+        self.assertEqual(s1["source"], "OpenStreetMap")
+        self.assertAlmostEqual(s1["lat"], 17.3854, places=3)
+        self.assertAlmostEqual(s1["lng"], 78.4862, places=3)
+
+    @patch("httpx.AsyncClient.post", new_callable=AsyncMock)
+    def test_overpass_mock_200_genuine_empty_result(self, mock_post):
+        """Verify genuine empty result in OSM is reported as 0 stations mapped without error."""
+        mock_post.return_value = httpx.Response(200, json=OSM_MOCKS["http_200_empty_elements"])
+        res = self.client.get("/api/stations?city=Hyderabad")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["mode"], "osm-overpass-live-search")
+        self.assertEqual(data["total"], 0)
+        self.assertEqual(len(data["stations"]), 0)
+        self.assertIn("No charging stations currently mapped", data["message"])
+
+    @patch("httpx.AsyncClient.post", new_callable=AsyncMock)
+    def test_overpass_mock_mirror_failover_success(self, mock_post):
+        """Verify mirror failover rotates through endpoints until a healthy mirror responds."""
+        mock_post.side_effect = [
+            httpx.Response(502, text=OSM_MOCKS["http_502_bad_gateway"]["body"]),
+            httpx.Response(429, text=OSM_MOCKS["http_429_rate_limited"]["body"]),
+            httpx.Response(200, json=OSM_MOCKS["http_200_valid_stations"]),
+        ]
+        res = self.client.get("/api/stations?city=Hyderabad")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(mock_post.call_count, 3)
+        self.assertEqual(data["mode"], "osm-overpass-live-search")
+        self.assertEqual(data["total"], 2)
+
+    @patch("httpx.AsyncClient.post", new_callable=AsyncMock)
+    def test_overpass_mock_all_mirrors_unavailable_returns_graceful_notice(self, mock_post):
+        """Verify graceful failure with status notice when all Overpass mirrors fail or time out."""
+        mock_post.side_effect = [
+            httpx.TimeoutException("Connection timed out"),
+            httpx.Response(502, text=OSM_MOCKS["http_502_bad_gateway"]["body"]),
+            httpx.Response(504, text=OSM_MOCKS["http_504_gateway_timeout"]["body"]),
+        ]
+        res = self.client.get("/api/stations?city=Hyderabad")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["mode"], "osm-overpass-unavailable")
+        self.assertEqual(data["total"], 0)
+        self.assertEqual(data["stations"], [])
+        self.assertIn("high global load", data["message"].lower())
+        self.assertNotEqual(data["mode"], "osm-overpass-live-search")
+
+    @patch("httpx.AsyncClient.post", new_callable=AsyncMock)
+    def test_overpass_mock_malformed_json_failover(self, mock_post):
+        """Verify malformed JSON from an upstream mirror triggers failover to next mirror."""
+        # Mirror 1 returns HTML/text error under 200; Mirror 2 returns valid JSON
+        mock_post.side_effect = [
+            httpx.Response(200, text=OSM_MOCKS["malformed_json"]["body"]),
+            httpx.Response(200, json=OSM_MOCKS["http_200_valid_stations"]),
+        ]
+        res = self.client.get("/api/stations?city=Hyderabad")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["mode"], "osm-overpass-live-search")
+        self.assertEqual(data["total"], 2)
+
+    @patch("httpx.AsyncClient.post", new_callable=AsyncMock)
+    def test_live_search_never_silently_injects_sample_data(self, mock_post):
+        """Verify live discovery endpoint NEVER silently injects sample stations upon failure."""
+        mock_post.side_effect = [
+            httpx.TimeoutException("All mirrors timed out"),
+            httpx.TimeoutException("All mirrors timed out"),
+            httpx.TimeoutException("All mirrors timed out"),
+        ]
+        # Rajahmundry has offline sample data available, but live endpoint must NOT use it
+        res = self.client.get("/api/stations?city=Rajahmundry")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["mode"], "osm-overpass-unavailable")
+        self.assertEqual(data["total"], 0)
+        self.assertEqual(data["stations"], [])
+        self.assertFalse(data.get("is_sample", False))
+
+    def test_offline_sample_endpoint_explicitly_isolated(self):
+        """Verify offline sample endpoint is strictly isolated and explicitly labeled."""
+        res = self.client.get("/api/stations/sample?city=Rajahmundry")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue(data.get("is_sample"))
+        self.assertEqual(data.get("mode"), "offline-sample-data")
+        self.assertGreater(data.get("total"), 0)
+        self.assertIn("Historical offline sample records", data.get("disclaimer", ""))
+        for stn in data.get("stations", []):
+            self.assertEqual(stn.get("source"), "Offline Verified Sample")
 
 
 if __name__ == "__main__":
