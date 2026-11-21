@@ -35,10 +35,11 @@ DATA_DIR = ROOT_DIR / "data"
 # OpenStreetMap & Overpass public service endpoints
 NOMINATIM_BASE_URL = "https://nominatim.openstreetmap.org/search"
 OVERPASS_ENDPOINTS = [
-    "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
 ]
-USER_AGENT = "GridSathi-AI/2.0 (EV Microgrid Orchestrator India; https://github.com/gridsathi/gridsathi-ai)"
+USER_AGENT = "GridSathi-AI/2.0 (EV Microgrid Orchestrator India; https://github.com/GavaraNeha/GridSathi-AI)"
 
 # ==============================================================================
 # Pre-seeded Indian Cities (Zero-latency offline resolution & OSM load reduction)
@@ -288,7 +289,10 @@ async def geocode_city_nominatim(city: str) -> Optional[Tuple[float, float, str]
 
 
 async def query_overpass_ev_stations(lat: float, lng: float, radius_meters: int = 15000) -> List[Dict[str, Any]]:
-    """Query Overpass API for amenity=charging_station using fast bounding-box filter."""
+    """
+    Query Overpass API for amenity=charging_station using fast bounding-box filter
+    and multi-mirror failover across global public Overpass endpoints.
+    """
     cached = cache_manager.get_stations(lat, lng)
     if cached is not None:
         return cached
@@ -299,31 +303,52 @@ async def query_overpass_ev_stations(lat: float, lng: float, radius_meters: int 
         if cached is not None:
             return cached
 
-        # Throttle Overpass calls: minimum 1.0s between requests
+        # Throttle Overpass calls: minimum 1.0s between requests per OSM usage policy
         elapsed = time.time() - cache_manager.last_overpass_time
         if elapsed < 1.0:
             await asyncio.sleep(1.0 - elapsed)
         cache_manager.last_overpass_time = time.time()
 
-        # Fast bounding box query (~15km box)
-        d = 0.13
+        # Fast bounding box query (~13km box, limited to 25 results)
+        d = 0.12
         bbox = f"{lat-d:.4f},{lng-d:.4f},{lat+d:.4f},{lng+d:.4f}"
-        overpass_query = f'[out:json][timeout:6];nwr["amenity"="charging_station"]({bbox});out center 30;'
+        overpass_query = f'[out:json][timeout:4];nwr["amenity"="charging_station"]({bbox});out center 25;'
 
-        headers = {"User-Agent": USER_AGENT}
+        headers = {
+            "User-Agent": USER_AGENT,
+            "Accept": "application/json",
+        }
         raw_elements = []
+        last_error: Optional[str] = None
+        succeeded_mirror: Optional[str] = None
 
-        # Try endpoints with tight timeout
+        # Try distinct global endpoints with bounded 5.0s timeout and automatic failover
         for endpoint in OVERPASS_ENDPOINTS:
             try:
-                async with httpx.AsyncClient(timeout=6.0) as client:
+                logger.info(f"Querying Overpass mirror: {endpoint} for ({lat:.4f}, {lng:.4f})")
+                async with httpx.AsyncClient(timeout=5.0) as client:
                     resp = await client.post(endpoint, data={"data": overpass_query}, headers=headers)
                     if resp.status_code == 200:
                         data = resp.json()
                         raw_elements = data.get("elements", [])
+                        succeeded_mirror = endpoint
+                        logger.info(f"Overpass mirror {endpoint} succeeded with {len(raw_elements)} elements")
                         break
+                    elif resp.status_code in (429, 502, 503, 504):
+                        logger.warning(f"Overpass mirror {endpoint} busy/rate-limited (HTTP {resp.status_code})")
+                        last_error = f"HTTP {resp.status_code}"
+                        continue
+                    else:
+                        logger.warning(f"Overpass mirror {endpoint} returned HTTP {resp.status_code}")
+                        last_error = f"HTTP {resp.status_code}"
+                        continue
+            except httpx.TimeoutException:
+                logger.warning(f"Overpass mirror {endpoint} timed out after 5.0s")
+                last_error = "Timeout"
+                continue
             except Exception as exc:
-                logger.warning(f"Overpass endpoint {endpoint} error: {exc}")
+                logger.warning(f"Overpass mirror {endpoint} error: {exc}")
+                last_error = str(exc)
                 continue
 
         stations: List[Dict[str, Any]] = []
@@ -385,6 +410,14 @@ async def query_overpass_ev_stations(lat: float, lng: float, radius_meters: int 
                 "source": "OpenStreetMap",
             }
             stations.append(station_dict)
+
+        if succeeded_mirror is not None:
+            cache_manager.set_stations(lat, lng, stations)
+            return stations
+
+        # If all mirrors failed or timed out, raise to trigger osm-overpass-unavailable
+        if last_error:
+            raise RuntimeError(f"All Overpass mirrors unavailable ({last_error})")
 
         cache_manager.set_stations(lat, lng, stations)
         return stations
