@@ -4,8 +4,10 @@ import SearchBar from './components/SearchBar';
 import LeafletMapView from './components/LeafletMapView';
 import StationList from './components/StationList';
 import StatusBanner from './components/StatusBanner';
+import MicrogridSimulation from './components/simulation/MicrogridSimulation';
+import { useMicrogridEngine } from './hooks/useMicrogridEngine';
 import { fetchConfig, fetchStations, fetchSampleStations } from './services/api';
-import { Zap, MapPin, Cpu, ShieldCheck, Gauge, ArrowRight, Globe } from 'lucide-react';
+import { Zap, MapPin, Cpu, ShieldCheck, Gauge, Globe } from 'lucide-react';
 
 export default function App() {
   const [config, setConfig] = useState(null);
@@ -19,6 +21,9 @@ export default function App() {
   const [error, setError] = useState(null);
   const [apiMessage, setApiMessage] = useState('');
   const [isSampleData, setIsSampleData] = useState(false);
+
+  // Initialize Microgrid Simulation Hook
+  const simulationEngine = useMicrogridEngine(simulationContextStation);
 
   // Initialize configuration
   useEffect(() => {
@@ -89,6 +94,15 @@ export default function App() {
     }
   };
 
+  // Switch context from Discovery to Simulation
+  const handleSetSimulationContext = (station) => {
+    setSimulationContextStation(station);
+    simulationEngine.applyStationContext(station);
+    setActiveTab('simulation');
+  };
+
+  const activeSlotLoad = simulationEngine?.result?.slots?.[0]?.load || 0;
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
       {/* Navbar */}
@@ -124,7 +138,9 @@ export default function App() {
               <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
                 Transformer Cap
               </span>
-              <b className="text-xl font-bold font-mono text-white">14 kW</b>
+              <b className="text-xl font-bold font-mono text-white">
+                {simulationEngine.capacity} kW
+              </b>
             </div>
           </div>
 
@@ -134,9 +150,11 @@ export default function App() {
             </div>
             <div>
               <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                Smart Bays
+                Dispatch Load (10:00)
               </span>
-              <b className="text-xl font-bold font-mono text-white">3 × 7 kW</b>
+              <b className="text-xl font-bold font-mono text-white">
+                {activeSlotLoad.toFixed(1)} kW
+              </b>
             </div>
           </div>
 
@@ -148,7 +166,9 @@ export default function App() {
               <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
                 Engine Audit
               </span>
-              <b className="text-sm font-bold font-mono text-emerald-400">48/48 PASS</b>
+              <b className="text-sm font-bold font-mono text-emerald-400">
+                48/48 PASS
+              </b>
             </div>
           </div>
         </div>
@@ -186,7 +206,7 @@ export default function App() {
                   city={currentCity}
                   selectedStation={selectedStation}
                   onSelectStation={(s) => setSelectedStation(s)}
-                  onSetSimulationContext={(s) => setSimulationContextStation(s)}
+                  onSetSimulationContext={handleSetSimulationContext}
                   onLoadSamples={handleLoadSamples}
                   isSampleData={isSampleData}
                   apiMessage={apiMessage}
@@ -219,17 +239,28 @@ export default function App() {
                       </p>
                     </div>
 
-                    <a
-                      href={
-                        selectedStation.maps_url ||
-                        `https://www.google.com/maps/dir/?api=1&destination=${selectedStation.lat},${selectedStation.lng}`
-                      }
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold transition-all shadow-md shrink-0 flex items-center gap-1.5"
-                    >
-                      <span>Get Directions ↗</span>
-                    </a>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleSetSimulationContext(selectedStation)}
+                        className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-300 font-semibold transition-all border border-slate-700 flex items-center gap-1.5"
+                      >
+                        <Cpu className="w-3.5 h-3.5 text-sky-400" />
+                        <span>Simulate Microgrid</span>
+                      </button>
+
+                      <a
+                        href={
+                          selectedStation.maps_url ||
+                          `https://www.google.com/maps/dir/?api=1&destination=${selectedStation.lat},${selectedStation.lng}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold transition-all shadow-md flex items-center gap-1.5"
+                      >
+                        <span>Get Directions ↗</span>
+                      </a>
+                    </div>
                   </div>
                 )}
               </div>
@@ -240,45 +271,9 @@ export default function App() {
           </div>
         )}
 
-        {/* Tab 2: Smart Microgrid Simulation Placeholder / Switcher */}
+        {/* Tab 2: Smart Microgrid Simulation View */}
         {activeTab === 'simulation' && (
-          <div className="p-8 rounded-2xl bg-slate-900/90 border border-slate-800 text-center space-y-4 shadow-xl">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mx-auto flex items-center justify-center">
-              <Cpu className="w-8 h-8" />
-            </div>
-
-            <div className="max-w-lg mx-auto space-y-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 border border-amber-500/30 px-3 py-1 rounded-full inline-block">
-                Preserved Microgrid Engine
-              </span>
-              <h2 className="text-2xl font-bold text-white">
-                Intelligent EV Load Scheduling & Microgrid Dispatch
-              </h2>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                The microgrid scheduling engine simulates 3 bays, dynamic transformer caps (7–21 kW), solar generation, disruption what-if analysis, and Slack-Priority optimization.
-              </p>
-            </div>
-
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <a
-                href="http://127.0.0.1:8000/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2"
-              >
-                <span>Launch Preserved Simulation Prototype</span>
-                <ArrowRight className="w-4 h-4" />
-              </a>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('discovery')}
-                className="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm transition-colors"
-              >
-                Return to Station Discovery
-              </button>
-            </div>
-          </div>
+          <MicrogridSimulation engine={simulationEngine} />
         )}
       </main>
 
