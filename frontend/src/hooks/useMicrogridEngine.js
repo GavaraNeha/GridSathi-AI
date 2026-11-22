@@ -65,14 +65,24 @@ export function useMicrogridEngine(initialContext = null) {
           })
         ) + 1;
 
+      const battery = Number(newVehicle.battery || newVehicle.capacity) || 40;
+      const soc = Number(newVehicle.soc) || 20;
+      const target = Number(newVehicle.target) || 80;
+      const energyReq =
+        newVehicle.energyReq != null && Number(newVehicle.energyReq) > 0
+          ? Number(newVehicle.energyReq)
+          : Math.max(0, ((target - soc) * battery) / 100);
+
       const created = {
         id: `EV-${nextNum}`,
-        name: newVehicle.name.trim() || `Fleet EV-${nextNum}`,
-        battery: Number(newVehicle.battery) || 40,
-        soc: Number(newVehicle.soc) || 20,
-        target: Number(newVehicle.target) || 80,
+        name: (newVehicle.name || newVehicle.model || `Fleet EV-${nextNum}`).trim(),
+        battery,
+        soc,
+        target,
+        energyReq,
         due: Number(newVehicle.due) || 2.0,
-        arrival: 0,
+        arrival: Number(newVehicle.arrival) || 0,
+        maxKw: Number(newVehicle.maxKw) || 7,
       };
 
       const updated = [...curr, created];
@@ -118,6 +128,16 @@ export function useMicrogridEngine(initialContext = null) {
     [capacity, events]
   );
 
+  const unDisruptedBaseline = useMemo(
+    () =>
+      runScheduler(
+        BASE_VEHICLES,
+        { capacity: 14, fault: false, brownout: false, solar: false },
+        mode
+      ),
+    [mode]
+  );
+
   const currentResult = useMemo(
     () => runScheduler(vehicles, simulationOptions, mode),
     [vehicles, simulationOptions, mode]
@@ -138,6 +158,89 @@ export function useMicrogridEngine(initialContext = null) {
     };
   }, [currentResult, baselineResult]);
 
+  // Feature 3: Explainable Disruption Replay Diff & Rationale
+  const disruptionDiff = useMemo(() => {
+    const isDisrupted =
+      events.fault ||
+      events.brownout ||
+      events.solar ||
+      events.emergency ||
+      capacity !== 14 ||
+      vehicles.length !== BASE_VEHICLES.length;
+
+    if (!isDisrupted) return null;
+
+    const deltaOnTime = currentResult.onTime - unDisruptedBaseline.onTime;
+    const deltaUnmet = currentResult.unmet - unDisruptedBaseline.unmet;
+    const deltaCost = currentResult.cost - unDisruptedBaseline.cost;
+    const deltaFairness =
+      Math.round(currentResult.fairness * 100) -
+      Math.round(unDisruptedBaseline.fairness * 100);
+
+    const vehicleShifts = currentResult.vehicles.map((ev, idx) => {
+      const baseIdx = unDisruptedBaseline.vehicles.findIndex((v) => v.id === ev.id);
+      const baseDelivered = baseIdx >= 0 ? unDisruptedBaseline.delivered[baseIdx] : 0;
+      const curDelivered = currentResult.delivered[idx];
+      const deltaKwh = curDelivered - baseDelivered;
+
+      let status = 'unchanged';
+      if (baseIdx < 0) {
+        status = 'injected';
+      } else if (deltaKwh < -0.05) {
+        status = 'lost';
+      } else if (deltaKwh > 0.05) {
+        status = 'gained';
+      }
+
+      return {
+        id: ev.id,
+        name: ev.name || ev.model,
+        baseDelivered,
+        curDelivered,
+        deltaKwh,
+        status,
+        due: ev.due,
+      };
+    });
+
+    const reasons = [];
+    if (events.fault) {
+      reasons.push(
+        'Bay 3 hardware outage forced 33% reduction in simultaneous bay capacity (2 bays active). The scheduler prioritized vehicles with the tightest deadline slack.'
+      );
+    }
+    if (events.brownout) {
+      reasons.push(
+        'Grid brownout throttled the site transformer ceiling to 10.0 kW, preventing concurrent high-power charging across all bays.'
+      );
+    }
+    if (events.solar) {
+      reasons.push(
+        'Midday solar generation injected up to 4.0 kW auxiliary clean energy during 11:00-14:00, allowing secondary vehicles to charge without transformer overdraw.'
+      );
+    }
+    if (events.emergency) {
+      reasons.push(
+        'Emergency Vehicle (EV-7) arrived with an urgent 30-minute deadline (10:30). Due to negative slack, the optimizer preempted immediate 7.0 kW power in Bay 1.'
+      );
+    }
+    if (capacity !== 14 && !events.brownout) {
+      reasons.push(
+        `Transformer capacity set to ${capacity.toFixed(1)} kW (baseline standard: 14.0 kW).`
+      );
+    }
+
+    return {
+      deltaOnTime,
+      deltaUnmet,
+      deltaCost,
+      deltaFairness,
+      vehicleShifts,
+      reasons,
+      baselineResult: unDisruptedBaseline,
+    };
+  }, [events, capacity, vehicles, currentResult, unDisruptedBaseline]);
+
   return {
     vehicles,
     mode,
@@ -154,7 +257,10 @@ export function useMicrogridEngine(initialContext = null) {
     resetSimulation,
     result: currentResult,
     baseline: baselineResult,
+    unDisruptedBaseline,
+    disruptionDiff,
     comparison,
+    simulationOptions,
     demand,
     clock,
     COLORS,

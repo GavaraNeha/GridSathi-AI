@@ -1,103 +1,171 @@
 import React from 'react';
-import { Calendar, Zap } from 'lucide-react';
+import { Flag } from 'lucide-react';
 
-export default function ScheduleRibbon({ result, vehicles, colors }) {
+export default function ScheduleRibbon({ result, vehicles, colors, disruptionDiff }) {
   const slots = result?.slots || [];
+  const tariffs = [6.5, 6.5, 5.0, 5.0, 4.5, 4.5, 5.0, 6.0, 7.5, 8.5];
+  const baselineSlots = disruptionDiff?.baselineResult?.slots || [];
+
+  // Helper to check if a vehicle departs in this slot
+  const isVehicleDeadline = (carIndex, slotIndex) => {
+    const v = vehicles?.[carIndex];
+    if (!v) return false;
+    const deadlineSlot = Math.round(v.due * 2);
+    return deadlineSlot === slotIndex;
+  };
+
+  const getVehicleColor = (carIndex) => {
+    if (typeof colors === 'function') return colors(carIndex);
+    if (Array.isArray(colors) && colors.length > 0) return colors[carIndex % colors.length];
+    const palette = ['#E83D62', '#4163F5', '#F5AD16', '#55BD8D', '#06B6D4', '#8B5CF6', '#EC4899'];
+    return palette[carIndex % palette.length];
+  };
 
   return (
-    <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3 shadow-xl">
-      <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-        <h3 className="text-sm font-bold text-white flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-emerald-400" />
-          <span>30-Minute Charger Bay Allocation Matrix</span>
-        </h3>
-        <span className="text-xs text-slate-400 font-mono">
-          🚩 = Departure Deadline Slot
-        </span>
+    <div className="bg-white border-2 border-[#111827] rounded-3xl shadow-[5px_5px_0px_#111827] p-5 sm:p-6 space-y-4">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h3 className="text-base sm:text-lg font-black text-[#111827]">
+            Multi-Track Charging Ribbon & Departure Flags
+          </h3>
+          <p className="text-xs text-[#64748B]">
+            Color-coded 30-min power capsules across Chargers 1–3 with red departure deadline markers.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap self-start sm:self-auto shrink-0">
+          {disruptionDiff && (
+            <div className="bg-[#FEF3C7] text-[#B45309] border border-[#F5AD16] rounded-full px-3 py-1 text-xs font-bold flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#F5AD16] animate-pulse" />
+              <span>Shifted Allocation</span>
+            </div>
+          )}
+          <div className="bg-[#FFE4E6] text-[#E83D62] border border-[#E83D62]/40 rounded-full px-3 py-1 text-xs font-bold flex items-center gap-1.5">
+            <Flag className="w-3.5 h-3.5 fill-[#E83D62]" />
+            <span>Red Flag = Departure Deadline</span>
+          </div>
+        </div>
       </div>
 
+      {/* Ribbon Matrix Table */}
       <div className="overflow-x-auto pb-2">
-        <div className="min-w-[720px] text-xs">
-          {/* Header Row: Slots & Tariffs */}
-          <div className="grid grid-cols-11 gap-1 pb-2 border-b border-slate-800 text-center font-mono">
-            <div className="text-left font-bold text-slate-400 py-1 px-2">
-              BAY / TARIFF
+        <div className="min-w-[760px] space-y-2">
+          {/* Header Row: Charger & Slots */}
+          <div className="grid grid-cols-[100px_repeat(10,1fr)] gap-2 items-center">
+            {/* Charger Label Pill */}
+            <div className="bg-[#111827] text-white font-black text-[11px] py-1.5 px-3 rounded-full text-center">
+              CHARGER
             </div>
-            {slots.map((s) => (
+
+            {/* 10 Time Slots */}
+            {slots.map((s, idx) => (
               <div
-                key={s.t}
-                className="py-1 px-1 bg-slate-950/60 rounded border border-slate-800/80"
+                key={s.time || idx}
+                className="bg-white border border-[#111827] rounded-xl py-1 px-1.5 text-center shadow-[1px_1px_0px_#111827]"
               >
-                <b className="text-white block text-[11px]">{s.time}</b>
-                <span className="text-[10px] text-amber-400">
-                  ₹{s.tariff}/kWh
-                </span>
+                <div className="text-[11px] font-black font-mono text-[#111827]">
+                  {s.time}
+                </div>
+                <div className="text-[9px] font-bold text-slate-500 font-mono">
+                  ₹{tariffs[idx] || 5}
+                </div>
               </div>
             ))}
           </div>
 
-          {/* Bay Rows */}
-          {[0, 1, 2].map((bayIndex) => {
-            const isFault = bayIndex >= result.maxBays;
+          {/* 3 Charger Bay Rows */}
+          {[0, 1, 2].map((bayIdx) => {
+            const isFault = bayIdx >= (result?.maxBays ?? 3);
 
             return (
               <div
-                key={bayIndex}
-                className="grid grid-cols-11 gap-1 items-center py-1.5 border-b border-slate-800/50"
+                key={bayIdx}
+                className="grid grid-cols-[100px_repeat(10,1fr)] gap-2 items-center"
               >
-                {/* Bay label */}
-                <div className="text-left font-mono px-2">
-                  <span className="font-bold text-slate-200 block">
-                    Bay 0{bayIndex + 1}
-                  </span>
-                  <small className="text-[10px] text-slate-500">
-                    {isFault ? 'OFFLINE' : '7 kW max'}
-                  </small>
+                {/* Bay Header Card */}
+                <div className="bg-white border-2 border-[#111827] rounded-xl p-2 text-center shadow-[2px_2px_0px_#111827]">
+                  <div className="text-xs font-black text-[#111827]">
+                    Bay 0{bayIdx + 1}
+                  </div>
+                  <div className="text-[9px] font-bold text-slate-400 font-mono">
+                    7.0 kW
+                  </div>
                 </div>
 
-                {/* 10 Slot Cells */}
-                {slots.map((s) => {
+                {/* Slot Cells */}
+                {slots.map((s, slotIdx) => {
                   if (isFault) {
                     return (
                       <div
-                        key={s.t}
-                        className="h-11 rounded bg-rose-950/20 border border-rose-900/30 flex items-center justify-center text-[10px] text-rose-500/60 font-mono"
+                        key={slotIdx}
+                        className="bg-red-50/60 border border-red-300 rounded-xl h-11 flex items-center justify-center text-[10px] font-black text-red-500"
+                        title="Bay offline due to hardware fault"
                       >
-                        FAULT
+                        OFFLINE
                       </div>
                     );
                   }
 
-                  const assignment = s.bays[bayIndex];
-                  if (!assignment) {
+                  const assignment = s.bays?.[bayIdx];
+                  const kw = assignment?.kw ?? assignment?.power ?? 0;
+                  const carIndex = assignment?.carIndex ?? assignment?.i;
+
+                  if (!assignment || kw <= 0.001 || carIndex === undefined) {
                     return (
                       <div
-                        key={s.t}
-                        className="h-11 rounded bg-slate-950/30 border border-slate-800/40 flex items-center justify-center text-[11px] text-slate-600 font-mono"
+                        key={slotIdx}
+                        className="bg-[#F8FAFC] border border-slate-200 rounded-xl h-11 flex items-center justify-center text-xs font-mono text-slate-400"
                       >
-                        —
+                        --
                       </div>
                     );
                   }
 
-                  const vehicle = vehicles[assignment.i];
-                  const color = colors[assignment.i % colors.length];
-                  const isDeadline =
-                    Math.round(vehicle.due * 2) === s.t + 1;
+                  const car = vehicles[carIndex];
+                  const hasDeadlineFlag = isVehicleDeadline(carIndex, slotIdx);
+                  const carBg = getVehicleColor(carIndex);
+
+                  const baseAssign = baselineSlots[slotIdx]?.bays?.[bayIdx];
+                  const isShifted = Boolean(
+                    disruptionDiff &&
+                    (baseAssign?.id !== assignment?.id ||
+                      Math.abs((baseAssign?.kw || 0) - kw) > 0.05)
+                  );
 
                   return (
                     <div
-                      key={s.t}
-                      className="h-11 rounded p-1 flex flex-col justify-center items-center text-center shadow-sm text-slate-950 font-bold font-mono transition-transform hover:scale-105"
-                      style={{ backgroundColor: color }}
-                      title={`${vehicle.name} (${assignment.power.toFixed(1)} kW)`}
+                      key={slotIdx}
+                      className={`rounded-xl h-11 p-1 flex flex-col justify-center items-center text-center text-white relative shadow-sm border ${
+                        isShifted ? 'ring-2 ring-[#F5AD16] border-white' : 'border-black/20'
+                      }`}
+                      style={{ backgroundColor: carBg }}
+                      title={`${car?.id || 'EV'} receiving ${kw.toFixed(1)} kW${
+                        isShifted ? ' (Allocation shifted from baseline by active disruption)' : ''
+                      }`}
                     >
-                      <span className="text-[10px] leading-tight truncate w-full">
-                        {assignment.id} {isDeadline ? '🚩' : ''}
-                      </span>
-                      <span className="text-[9px] opacity-90">
-                        {assignment.power.toFixed(1)} kW
-                      </span>
+                      {isShifted && (
+                        <div
+                          className="absolute -top-1 -left-1 w-2.5 h-2.5 rounded-full bg-[#F5AD16] border border-[#111827] shadow-xs"
+                          title="Allocation shifted by active disruption"
+                        />
+                      )}
+                      <div className="text-[10px] font-black leading-tight truncate w-full">
+                        {car?.id || 'EV'}
+                      </div>
+                      <div className="text-[9px] font-bold font-mono leading-tight opacity-90">
+                        {kw.toFixed(1)}kW
+                      </div>
+
+                      {/* Red Departure Deadline Flag */}
+                      {hasDeadlineFlag && (
+                        <div
+                          className="absolute -top-1.5 -right-1 bg-white border border-[#E83D62] rounded-full p-0.5 shadow-sm"
+                          title="Departure Deadline"
+                        >
+                          <Flag className="w-2.5 h-2.5 fill-[#E83D62] text-[#E83D62]" />
+                        </div>
+                      )}
                     </div>
                   );
                 })}

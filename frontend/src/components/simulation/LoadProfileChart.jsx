@@ -1,68 +1,72 @@
 import React from 'react';
-import { BarChart3, Info } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
 
 export default function LoadProfileChart({ result, vehicles, colors }) {
   const slots = result?.slots || [];
   const maxScale = 24; // 24 kW max scale height
-  const chartHeightPx = 180;
+  const chartHeightPx = 160;
+
+  const getVehicleColor = (carIndex) => {
+    if (typeof colors === 'function') return colors(carIndex);
+    if (Array.isArray(colors) && colors.length > 0) return colors[carIndex % colors.length];
+    const palette = ['#E83D62', '#4163F5', '#F5AD16', '#55BD8D', '#06B6D4', '#8B5CF6', '#EC4899'];
+    return palette[carIndex % palette.length];
+  };
 
   return (
-    <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4 shadow-xl">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-800">
+    <div className="bg-white border-2 border-[#111827] rounded-3xl shadow-[5px_5px_0px_#111827] p-5 sm:p-6 space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
         <div>
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-emerald-400" />
+          <h3 className="text-base sm:text-lg font-black text-[#111827] flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-[#4163F5]" />
             <span>Site Power Load Curve & Grid Capacity Ceiling</span>
           </h3>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-[#64748B]">
             30-minute interval aggregate power dispatch vs transformer and solar capacity
           </p>
         </div>
 
         <div className="flex items-center gap-4 text-xs font-mono">
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-0.5 bg-amber-400 block"></span>
-            <span className="text-slate-400">Site Limit</span>
+            <span className="w-3.5 h-1 border-t-2 border-dashed border-[#F5AD16] block"></span>
+            <span className="text-slate-600 font-bold">Site Limit</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 block"></span>
-            <span className="text-slate-400">EV Power Draw</span>
+            <span className="w-2.5 h-2.5 rounded-sm bg-[#4163F5] block"></span>
+            <span className="text-slate-600 font-bold">EV Power Draw</span>
           </div>
         </div>
       </div>
 
       {/* Chart Canvas */}
       <div className="relative pt-6 pb-2 px-2 overflow-x-auto">
-        <div className="min-w-[640px] flex items-end justify-between gap-3 h-[180px] border-b border-slate-800 relative">
-          {slots.map((s) => {
-            // Calculate load height
+        <div className="min-w-[640px] flex items-end justify-between gap-3 h-[160px] border-b-2 border-[#111827] relative">
+          {slots.map((s, idx) => {
             const loadHeight = (s.load / maxScale) * chartHeightPx;
             const limitHeight = (s.limit / maxScale) * chartHeightPx;
 
             return (
               <div
-                key={s.t}
+                key={s.time || idx}
                 className="flex-1 flex flex-col items-center justify-end h-full relative group"
               >
                 {/* Capacity line tick */}
                 <div
-                  className="absolute w-full border-t-2 border-dashed border-amber-400/80 z-20 pointer-events-none"
+                  className="absolute w-full border-t-2 border-dashed border-[#F5AD16] z-20 pointer-events-none"
                   style={{ bottom: `${limitHeight}px` }}
                   title={`Site limit: ${s.limit.toFixed(1)} kW`}
                 />
 
                 {/* Stacked EV segments */}
                 <div
-                  className="w-full max-w-[48px] rounded-t overflow-hidden flex flex-col-reverse justify-start shadow-lg z-10 transition-all group-hover:brightness-110"
+                  className="w-full max-w-[42px] rounded-t-lg overflow-hidden flex flex-col-reverse justify-start border-2 border-b-0 border-[#111827] z-10 transition-all group-hover:brightness-105"
                   style={{ height: `${loadHeight}px` }}
                 >
                   {s.bays.filter(Boolean).map((a, bIdx) => {
-                    const segmentHeight =
-                      s.load > 0
-                        ? (a.power / s.load) * 100
-                        : 0;
-                    const color = colors[a.i % colors.length];
-                    const vehicle = vehicles[a.i];
+                    const kw = a.kw ?? a.power ?? 0;
+                    const carIndex = a.carIndex ?? a.i;
+                    const segmentHeight = s.load > 0 ? (kw / s.load) * 100 : 0;
+                    const color = getVehicleColor(carIndex);
 
                     return (
                       <div
@@ -72,7 +76,7 @@ export default function LoadProfileChart({ result, vehicles, colors }) {
                           backgroundColor: color,
                         }}
                         className="w-full relative transition-all"
-                        title={`${vehicle.name} (${a.id}): ${a.power.toFixed(1)} kW`}
+                        title={`Bay ${bIdx + 1}: ${kw.toFixed(1)} kW`}
                       />
                     );
                   })}
@@ -80,7 +84,7 @@ export default function LoadProfileChart({ result, vehicles, colors }) {
 
                 {/* Time label under column */}
                 <div className="text-center mt-2">
-                  <span className="text-[11px] font-mono text-slate-300 block font-semibold">
+                  <span className="text-[11px] font-mono text-[#111827] block font-black">
                     {s.time}
                   </span>
                   <span className="text-[10px] font-mono text-slate-500 block">
@@ -93,12 +97,11 @@ export default function LoadProfileChart({ result, vehicles, colors }) {
         </div>
       </div>
 
-      {/* Solar & Grid Footnote */}
-      <div className="flex flex-wrap items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-800/60 font-mono">
-        <span>Site Base Cap: {result.gridCap} kW</span>
-        <span>Peak Observed Load: {result.peak.toFixed(1)} kW</span>
-        <span>Modeled Total Cost: ₹{Math.round(result.cost)}</span>
-        <span>Peak Headroom: {(result.gridCap + 4).toFixed(1)} kW</span>
+      {/* Footnote */}
+      <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100 font-mono">
+        <span>Site Limit: {result?.slots?.[0]?.limit || 14} kW</span>
+        <span>Peak Observed: {result?.peak?.toFixed(1) || 14.0} kW</span>
+        <span>Modeled Total Cost: ₹{Math.round(result?.cost || 263)}</span>
       </div>
     </div>
   );

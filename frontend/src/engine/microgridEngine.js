@@ -28,6 +28,9 @@ export const BASE_VEHICLES = [
 export const TARIFF = [6.5, 6.5, 5.0, 5.0, 4.5, 4.5, 5.0, 6.0, 7.5, 8.5];
 
 export function demand(ev) {
+  if (ev.energyReq != null && !isNaN(ev.energyReq) && Number(ev.energyReq) > 0) {
+    return Number(ev.energyReq);
+  }
   return Math.max(0, ((ev.target - ev.soc) * ev.battery) / 100);
 }
 
@@ -103,7 +106,8 @@ export function runScheduler(vehicles, options = {}, mode = 'smart') {
       );
       if (!choice || left < 0.000001) break;
 
-      const power = Math.min(7, left, remaining[choice.i] / 0.5);
+      const maxPower = choice.ev.maxKw ? Number(choice.ev.maxKw) : 7;
+      const power = Math.min(maxPower, 7, left, remaining[choice.i] / 0.5);
       if (power < 0.000001) break;
 
       const energy = power * 0.5;
@@ -111,7 +115,13 @@ export function runScheduler(vehicles, options = {}, mode = 'smart') {
       delivered[choice.i] += energy;
       allocations[choice.i][t] = power;
 
-      bayAssignments[b] = { i: choice.i, id: choice.ev.id, power };
+      bayAssignments[b] = {
+        i: choice.i,
+        carIndex: choice.i,
+        id: choice.ev.id,
+        power,
+        kw: power,
+      };
       left -= power;
     }
 

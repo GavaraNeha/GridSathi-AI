@@ -1,224 +1,366 @@
 import React from 'react';
 import {
-  Zap,
   Sliders,
   AlertTriangle,
+  Zap,
   Sun,
   ShieldAlert,
   RotateCcw,
-  PlusCircle,
+  TrendingDown,
   TrendingUp,
+  ArrowRight,
+  Info,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react';
 
 export default function DisruptionDeck({
-  mode,
-  setMode,
   capacity,
   setCapacity,
   events,
   toggleEvent,
-  comparison,
   onReset,
-  onOpenAddModal,
-  stationContext,
+  disruptionDiff,
+  mode = 'smart',
 }) {
-  const diffOnTime = comparison?.diffOnTime ?? 0;
-  const diffEnergy = comparison?.diffEnergy ?? 0;
-
   return (
-    <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-5">
-      {/* Top Header: Scenario Title & Mode Selector */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+    <div className="bg-[#111827] text-white border-2 border-[#111827] rounded-3xl shadow-[5px_5px_0px_rgba(17,24,39,0.3)] p-6 space-y-5">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-              Interactive Microgrid Optimizer
-            </span>
-            {stationContext && (
-              <span className="text-[10px] text-slate-400 font-medium truncate max-w-xs">
-                Context: <strong className="text-white">{stationContext.name}</strong>
-              </span>
-            )}
-          </div>
-          <h2 className="text-xl font-bold text-white tracking-tight mt-1">
-            Dispatch Policy & Disruption Testing
-          </h2>
-        </div>
-
-        {/* Algorithm Modes */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800">
-          <button
-            type="button"
-            onClick={() => setMode('smart')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              mode === 'smart'
-                ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            ⚡ Slack-Priority (Smart)
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode('edf')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              mode === 'edf'
-                ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            ⏱️ Earliest Deadline (EDF)
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode('fcfs')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              mode === 'fcfs'
-                ? 'bg-slate-700 text-white'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            🚗 First-Come (FCFS)
-          </button>
-        </div>
-      </div>
-
-      {/* Comparison Callout vs FCFS Baseline */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-xs">
-        <div className="flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span className="text-slate-300">
-            <strong>Algorithmic Gain vs FCFS Baseline:</strong>{' '}
-            <span
-              className={diffOnTime >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}
-            >
-              {diffOnTime >= 0 ? `+${diffOnTime}` : diffOnTime} EVs on-time
-            </span>{' '}
-            |{' '}
-            <span
-              className={diffEnergy >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}
-            >
-              {diffEnergy >= 0 ? `+${diffEnergy.toFixed(1)}` : diffEnergy.toFixed(1)} kWh
-            </span>{' '}
-            energy delivered
+          <span className="text-[10px] font-black tracking-widest text-[#F5AD16] uppercase block">
+            STRESS TESTING & SIMULATION ENGINE
           </span>
+          <h3 className="text-base sm:text-lg font-black text-white tracking-tight mt-0.5">
+            What-If Disruptions & Operational Controls
+          </h3>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={onOpenAddModal}
-            className="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-          >
-            <PlusCircle className="w-3.5 h-3.5" />
-            <span>Add Vehicle</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={onReset}
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
-            title="Reset Simulation to Baseline"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
-        </div>
+        <button
+          onClick={onReset}
+          className="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 self-start sm:self-auto transition-colors"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          <span>Reset Disruptions</span>
+        </button>
       </div>
 
-      {/* Controls: Transformer Slider & Disruption Switches */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
-        {/* Transformer Slider (5 cols) */}
-        <div className="md:col-span-5 p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2">
+      {/* Slider & Disruption Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+        {/* Left: Transformer Capacity Slider (5 cols) */}
+        <div className="lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-3">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-400 font-medium flex items-center gap-1.5">
-              <Sliders className="w-3.5 h-3.5 text-sky-400" />
-              <span>Transformer Capacity:</span>
+            <span className="font-black text-slate-300 flex items-center gap-1.5">
+              <Sliders className="w-4 h-4 text-[#4163F5]" />
+              <span>Transformer Capacity Ceiling</span>
             </span>
-            <b className="text-sm font-mono text-white bg-slate-800 px-2.5 py-0.5 rounded">
-              {capacity} kW
-            </b>
+            <span className="text-sm font-black font-mono text-[#F5AD16] bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+              {capacity.toFixed(1)} kW
+            </span>
           </div>
 
           <input
             type="range"
             min="7"
             max="21"
-            step="1"
+            step="0.5"
             value={capacity}
-            onChange={(e) => setCapacity(Number(e.target.value))}
-            className="w-full accent-emerald-500 cursor-pointer"
+            onChange={(e) => setCapacity(parseFloat(e.target.value))}
+            className="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-[#4163F5]"
           />
 
-          <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-            <span>7 kW (1 bay)</span>
-            <span>14 kW (standard)</span>
-            <span>21 kW (3 full bays)</span>
+          <div className="flex justify-between text-[10px] font-mono text-slate-500 font-bold">
+            <span>7 kW (Congested)</span>
+            <span>14 kW (Standard)</span>
+            <span>21 kW (Surplus)</span>
           </div>
         </div>
 
-        {/* Disruption Deck Toggles (7 cols) */}
-        <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {/* Charger Fault */}
+        {/* Right: 4 Operational Disruption Switches (7 cols) */}
+        <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* 1. Charger Fault */}
           <button
             type="button"
             onClick={() => toggleEvent('fault')}
-            className={`p-3 rounded-xl border text-left transition-all ${
+            className={`p-3.5 rounded-2xl border-2 text-left transition-all flex items-center justify-between ${
               events.fault
-                ? 'bg-rose-500/15 border-rose-500 text-rose-300 ring-1 ring-rose-500/40'
-                : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                ? 'bg-[#E83D62]/15 border-[#E83D62] text-white shadow-md'
+                : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
             }`}
           >
-            <AlertTriangle className={`w-4 h-4 mb-1.5 ${events.fault ? 'text-rose-400' : 'text-slate-500'}`} />
-            <span className="text-xs font-bold block">Bay 3 Fault</span>
-            <small className="text-[10px] text-slate-500 block">Cap at 2 bays</small>
+            <div className="space-y-0.5">
+              <span className="text-xs font-black block">Bay 3 Hardware Fault</span>
+              <span className="text-[10px] text-slate-400 block">
+                {events.fault ? 'Bay 3 tripped offline' : 'All 3 bays operational'}
+              </span>
+            </div>
+            <div
+              className={`w-7 h-4 rounded-full transition-colors relative p-0.5 ${
+                events.fault ? 'bg-[#E83D62]' : 'bg-slate-800'
+              }`}
+            >
+              <div
+                className={`w-3 h-3 rounded-full bg-white transition-transform ${
+                  events.fault ? 'translate-x-3' : 'translate-x-0'
+                }`}
+              />
+            </div>
           </button>
 
-          {/* Grid Brownout */}
+          {/* 2. Grid Brownout */}
           <button
             type="button"
             onClick={() => toggleEvent('brownout')}
-            className={`p-3 rounded-xl border text-left transition-all ${
+            className={`p-3.5 rounded-2xl border-2 text-left transition-all flex items-center justify-between ${
               events.brownout
-                ? 'bg-amber-500/15 border-amber-500 text-amber-300 ring-1 ring-amber-500/40'
-                : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                ? 'bg-[#F5AD16]/15 border-[#F5AD16] text-white shadow-md'
+                : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
             }`}
           >
-            <Zap className={`w-4 h-4 mb-1.5 ${events.brownout ? 'text-amber-400' : 'text-slate-500'}`} />
-            <span className="text-xs font-bold block">Brownout</span>
-            <small className="text-[10px] text-slate-500 block">Cap at 10 kW</small>
+            <div className="space-y-0.5">
+              <span className="text-xs font-black block">Grid Brownout (10 kW)</span>
+              <span className="text-[10px] text-slate-400 block">
+                {events.brownout ? 'Supply throttled to 10 kW' : 'Normal grid voltage'}
+              </span>
+            </div>
+            <div
+              className={`w-7 h-4 rounded-full transition-colors relative p-0.5 ${
+                events.brownout ? 'bg-[#F5AD16]' : 'bg-slate-800'
+              }`}
+            >
+              <div
+                className={`w-3 h-3 rounded-full bg-white transition-transform ${
+                  events.brownout ? 'translate-x-3' : 'translate-x-0'
+                }`}
+              />
+            </div>
           </button>
 
-          {/* Solar Canopy */}
+          {/* 3. Solar Canopy Boost */}
           <button
             type="button"
             onClick={() => toggleEvent('solar')}
-            className={`p-3 rounded-xl border text-left transition-all ${
+            className={`p-3.5 rounded-2xl border-2 text-left transition-all flex items-center justify-between ${
               events.solar
-                ? 'bg-emerald-500/15 border-emerald-500 text-emerald-300 ring-1 ring-emerald-500/40'
-                : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                ? 'bg-[#55BD8D]/15 border-[#55BD8D] text-white shadow-md'
+                : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
             }`}
           >
-            <Sun className={`w-4 h-4 mb-1.5 ${events.solar ? 'text-emerald-400' : 'text-slate-500'}`} />
-            <span className="text-xs font-bold block">Solar Boost</span>
-            <small className="text-[10px] text-slate-500 block">+1–4 kW solar</small>
+            <div className="space-y-0.5">
+              <span className="text-xs font-black block">Solar Canopy (+4 kW)</span>
+              <span className="text-[10px] text-slate-400 block">
+                {events.solar ? 'Midday solar generation active' : 'Solar array idle'}
+              </span>
+            </div>
+            <div
+              className={`w-7 h-4 rounded-full transition-colors relative p-0.5 ${
+                events.solar ? 'bg-[#55BD8D]' : 'bg-slate-800'
+              }`}
+            >
+              <div
+                className={`w-3 h-3 rounded-full bg-white transition-transform ${
+                  events.solar ? 'translate-x-3' : 'translate-x-0'
+                }`}
+              />
+            </div>
           </button>
 
-          {/* Emergency Arrival */}
+          {/* 4. Emergency Arrival */}
           <button
             type="button"
             onClick={() => toggleEvent('emergency')}
-            className={`p-3 rounded-xl border text-left transition-all ${
+            className={`p-3.5 rounded-2xl border-2 text-left transition-all flex items-center justify-between ${
               events.emergency
-                ? 'bg-purple-500/15 border-purple-500 text-purple-300 ring-1 ring-purple-500/40'
-                : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                ? 'bg-[#8B5CF6]/15 border-[#8B5CF6] text-white shadow-md'
+                : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
             }`}
           >
-            <ShieldAlert className={`w-4 h-4 mb-1.5 ${events.emergency ? 'text-purple-400' : 'text-slate-500'}`} />
-            <span className="text-xs font-bold block">Emergency</span>
-            <small className="text-[10px] text-slate-500 block">+EV-7 arrival</small>
+            <div className="space-y-0.5">
+              <span className="text-xs font-black block">Emergency EV (+EV-7)</span>
+              <span className="text-[10px] text-slate-400 block">
+                {events.emergency ? 'High-priority ambulance injected' : 'Standard 6-EV fleet'}
+              </span>
+            </div>
+            <div
+              className={`w-7 h-4 rounded-full transition-colors relative p-0.5 ${
+                events.emergency ? 'bg-[#8B5CF6]' : 'bg-slate-800'
+              }`}
+            >
+              <div
+                className={`w-3 h-3 rounded-full bg-white transition-transform ${
+                  events.emergency ? 'translate-x-3' : 'translate-x-0'
+                }`}
+              />
+            </div>
           </button>
         </div>
       </div>
+
+      {/* FEATURE 3: EXPLAINABLE DISRUPTION REPLAY & IMPACT ANALYSIS PANEL */}
+      {disruptionDiff && (
+        <div className="mt-4 pt-4 border-t border-slate-800 space-y-4 animate-in fade-in duration-300">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#F5AD16] animate-ping" />
+              <h4 className="text-sm font-black text-white tracking-wide uppercase flex items-center gap-2">
+                <span>Disruption Replay & Causal Decision Analysis</span>
+                <span className="text-[10px] font-bold text-slate-400 font-mono normal-case">
+                  (Mode: {mode.toUpperCase()})
+                </span>
+              </h4>
+            </div>
+
+            <span className="text-[11px] text-[#F5AD16] font-mono font-bold bg-[#F5AD16]/10 border border-[#F5AD16]/30 px-2.5 py-0.5 rounded-lg">
+              Active Disruption Delta Active
+            </span>
+          </div>
+
+          {/* Before vs After KPI Delta Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            {/* On-Time EVs Delta */}
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-3">
+              <span className="text-[10px] text-slate-400 font-bold block uppercase">
+                On-Time Departures
+              </span>
+              <div className="flex items-baseline gap-2 mt-1">
+                <span className="font-mono text-slate-400 line-through">
+                  {disruptionDiff.baselineResult.onTime}/6
+                </span>
+                <ArrowRight className="w-3 h-3 text-slate-500" />
+                <span
+                  className={`text-base font-black font-mono ${
+                    disruptionDiff.deltaOnTime >= 0 ? 'text-[#55BD8D]' : 'text-[#E83D62]'
+                  }`}
+                >
+                  {disruptionDiff.baselineResult.onTime + disruptionDiff.deltaOnTime}
+                </span>
+                <span
+                  className={`text-[10px] font-bold font-mono ${
+                    disruptionDiff.deltaOnTime >= 0 ? 'text-[#55BD8D]' : 'text-[#E83D62]'
+                  }`}
+                >
+                  ({disruptionDiff.deltaOnTime >= 0 ? '+' : ''}
+                  {disruptionDiff.deltaOnTime})
+                </span>
+              </div>
+            </div>
+
+            {/* Unmet Energy Delta */}
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-3">
+              <span className="text-[10px] text-slate-400 font-bold block uppercase">
+                Unmet Deficit
+              </span>
+              <div className="flex items-baseline gap-2 mt-1">
+                <span className="font-mono text-slate-400 line-through">
+                  {disruptionDiff.baselineResult.unmet.toFixed(1)}k
+                </span>
+                <ArrowRight className="w-3 h-3 text-slate-500" />
+                <span
+                  className={`text-base font-black font-mono ${
+                    disruptionDiff.deltaUnmet <= 0 ? 'text-[#55BD8D]' : 'text-[#E83D62]'
+                  }`}
+                >
+                  {(disruptionDiff.baselineResult.unmet + disruptionDiff.deltaUnmet).toFixed(1)} kWh
+                </span>
+              </div>
+            </div>
+
+            {/* Peak Site Load */}
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-3">
+              <span className="text-[10px] text-slate-400 font-bold block uppercase">
+                Peak Load Draw
+              </span>
+              <div className="flex items-baseline gap-2 mt-1">
+                <span className="font-mono text-slate-400 line-through">
+                  {disruptionDiff.baselineResult.peak.toFixed(1)}k
+                </span>
+                <ArrowRight className="w-3 h-3 text-slate-500" />
+                <span className="text-base font-black font-mono text-white">
+                  {(disruptionDiff.baselineResult.peak +
+                    (events.brownout ? -4.0 : events.solar ? 2.0 : 0.0)).toFixed(1)}{' '}
+                  kW
+                </span>
+              </div>
+            </div>
+
+            {/* Jain's Fairness Delta */}
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-3">
+              <span className="text-[10px] text-slate-400 font-bold block uppercase">
+                Jain Fairness Index
+              </span>
+              <div className="flex items-baseline gap-2 mt-1">
+                <span className="font-mono text-slate-400 line-through">
+                  {Math.round(disruptionDiff.baselineResult.fairness * 100)}%
+                </span>
+                <ArrowRight className="w-3 h-3 text-slate-500" />
+                <span
+                  className={`text-base font-black font-mono ${
+                    disruptionDiff.deltaFairness >= 0 ? 'text-[#55BD8D]' : 'text-[#E83D62]'
+                  }`}
+                >
+                  {Math.round(disruptionDiff.baselineResult.fairness * 100) +
+                    disruptionDiff.deltaFairness}
+                  %
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Vehicle Energy Shift Breakdown */}
+          <div className="space-y-2">
+            <span className="text-[11px] font-black tracking-wider uppercase text-slate-300 block">
+              Vehicle-by-Vehicle Energy Allocation Shifts:
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              {disruptionDiff.vehicleShifts.map((vs) => (
+                <div
+                  key={vs.id}
+                  className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between text-xs"
+                >
+                  <div>
+                    <span className="font-bold text-white block">{vs.id}</span>
+                    <span className="text-[10px] text-slate-400 truncate block max-w-[140px]">
+                      {vs.name}
+                    </span>
+                  </div>
+
+                  {vs.status === 'injected' ? (
+                    <span className="px-2 py-0.5 rounded bg-purple-900/40 text-purple-300 border border-purple-500 font-mono font-bold text-[10px]">
+                      +{vs.curDelivered.toFixed(1)} kWh (Injected)
+                    </span>
+                  ) : vs.status === 'lost' ? (
+                    <span className="px-2 py-0.5 rounded bg-red-900/40 text-[#E83D62] border border-red-500 font-mono font-bold text-[10px] flex items-center gap-1">
+                      <TrendingDown className="w-3 h-3" />
+                      <span>{vs.deltaKwh.toFixed(1)} kWh</span>
+                    </span>
+                  ) : vs.status === 'gained' ? (
+                    <span className="px-2 py-0.5 rounded bg-emerald-900/40 text-[#55BD8D] border border-emerald-500 font-mono font-bold text-[10px] flex items-center gap-1">
+                      <TrendingUp className="w-3 h-3" />
+                      <span>+{vs.deltaKwh.toFixed(1)} kWh</span>
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-mono font-bold text-[10px]">
+                      Unchanged ({vs.curDelivered.toFixed(1)}k)
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Algorithmic Causal Explanations */}
+          <div className="bg-slate-900/95 border border-slate-800 rounded-2xl p-3.5 space-y-2 text-xs">
+            <span className="font-black text-[#F5AD16] text-[11px] uppercase tracking-wider block">
+              Algorithmic Scheduling Rationale:
+            </span>
+            <ul className="space-y-1.5 text-slate-300 text-[11px] leading-relaxed list-disc list-inside">
+              {disruptionDiff.reasons.map((r, i) => (
+                <li key={i}>{r}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

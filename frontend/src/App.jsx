@@ -11,7 +11,7 @@ import { MapPin, Globe } from 'lucide-react';
 
 export default function App() {
   const [config, setConfig] = useState(null);
-  const [activeTab, setActiveTab] = useState('discovery');
+  const [activeTab, setActiveTab] = useState('simulation');
   const [currentCity, setCurrentCity] = useState('Hyderabad');
   const [stations, setStations] = useState([]);
   const [cityCoords, setCityCoords] = useState({ lat: 17.3850, lng: 78.4867 });
@@ -34,7 +34,7 @@ export default function App() {
     loadInitialConfig();
   }, []);
 
-  // Search stations when user initiates search, selects a city, or uses GPS near-me
+  // Search stations when user initiates search or selects a city
   const handleSearch = async (cityName, lat = null, lng = null) => {
     const term = cityName?.trim() || '';
     if (term.length < 2 && (lat == null || lng == null)) return;
@@ -103,21 +103,33 @@ export default function App() {
   // Switch context from Discovery to Simulation
   const handleSetSimulationContext = (station) => {
     setSimulationContextStation(station);
+    simulationEngine.applyStationContext(station);
     setActiveTab('simulation');
   };
 
   return (
     <div className="min-h-screen bg-[#F7F5F0] text-[#111827] flex flex-col font-sans">
-      {/* Navigation Header */}
-      <Navbar
-        config={config}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+      {/* Show Navbar on Discovery Tab */}
+      {activeTab === 'discovery' && (
+        <Navbar
+          config={config}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
+      )}
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Tab 1: Discovery & OpenStreetMap View (Default in Commit 12) */}
+        {/* Tab 1: Smart Microgrid (Primary View matching exact screenshot) */}
+        {activeTab === 'simulation' && (
+          <MicrogridSimulation
+            engine={simulationEngine}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
+        )}
+
+        {/* Tab 2: Discovery & OpenStreetMap View */}
         {activeTab === 'discovery' && (
           <div className="space-y-6">
             {/* Search Bar Container */}
@@ -202,11 +214,6 @@ export default function App() {
             {/* Transparency Banner */}
             <StatusBanner simulationContextStation={simulationContextStation} />
           </div>
-        )}
-
-        {/* Tab 2: Smart Microgrid Simulation View */}
-        {activeTab === 'simulation' && (
-          <MicrogridSimulation engine={simulationEngine} />
         )}
       </main>
     </div>
