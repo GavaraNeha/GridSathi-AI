@@ -56,17 +56,29 @@ export async function fetchLocations(term) {
 }
 
 /**
- * Fetch authentic EV charging stations mapped in OpenStreetMap via Overpass API.
+ * Fetch authentic EV charging stations mapped in OpenStreetMap via Overpass / Nominatim / Verified Cache.
  * @param {string} city
+ * @param {number|null} lat
+ * @param {number|null} lng
+ * @param {boolean} live_only
  */
-export async function fetchStations(city) {
+export async function fetchStations(city, lat = null, lng = null, live_only = false) {
   const term = city?.trim() || '';
   if (term.length < 2) {
     throw new Error('Please enter a valid Indian city or location name.');
   }
 
   try {
-    const res = await fetch(`${BASE_URL}/api/stations?city=${encodeURIComponent(term)}`);
+    const params = new URLSearchParams({ city: term });
+    if (lat != null && lng != null) {
+      params.append('lat', String(lat));
+      params.append('lng', String(lng));
+    }
+    if (live_only) {
+      params.append('live_only', 'true');
+    }
+
+    const res = await fetch(`${BASE_URL}/api/stations?${params.toString()}`);
     const data = await res.json();
 
     if (res.status === 429) {

@@ -49,3 +49,6 @@ yarn-error.log*
 pnpm-debug.log*
 .DS_Store
 Thumbs.db
+
+# Large raw datasets (exclude redundant CSVs; keep runtime JSON & seed cache)
+data/*.csv

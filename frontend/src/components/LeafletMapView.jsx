@@ -29,6 +29,7 @@ export default function LeafletMapView({
   stations = [],
   selectedStation,
   onSelectStation,
+  onSetSimulationContext,
   city = 'India',
   centerLat = 20.5937,
   centerLng = 78.9629,
@@ -56,7 +57,6 @@ export default function LeafletMapView({
       maxZoom: 19,
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
-      className: 'osm-dark-tiles',
     });
 
     tileLayer.addTo(map);
@@ -105,11 +105,12 @@ export default function LeafletMapView({
 
       const popupHtml = `
         <div style="font-family:'Plus Jakarta Sans',sans-serif;color:#f8fafc;padding:4px 0;min-width:210px;">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap;">
             <span style="background:#10b981;color:#022c22;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:800;">
               OPENSTREETMAP EV
             </span>
             ${station.operator ? `<span style="background:#1e293b;color:#38bdf8;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;">${station.operator}</span>` : ''}
+            ${station.distance_km != null ? `<span style="background:#334155;color:#f8fafc;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;">📍 ${station.distance_km} km</span>` : ''}
           </div>
           <h4 style="margin:0 0 4px;font-size:13px;font-weight:700;color:#ffffff;line-height:1.3;">
             ${station.name}
@@ -119,10 +120,14 @@ export default function LeafletMapView({
           </p>
           ${station.capacity ? `<div style="font-size:11px;color:#cbd5e1;margin-bottom:6px;">⚡ Capacity: <strong>${station.capacity} bays</strong></div>` : ''}
           ${station.sockets ? `<div style="font-size:11px;color:#cbd5e1;margin-bottom:8px;">🔌 Connectors: <strong>${station.sockets}</strong></div>` : ''}
-          <div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
+          <div style="display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap;">
             <a href="${directionsUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:4px;background:#10b981;color:#022c22;padding:5px 9px;border-radius:6px;text-decoration:none;font-size:11px;font-weight:700;">
               Get Directions ↗
             </a>
+            ${onSetSimulationContext ? `
+            <button id="sim-btn-${station.id}" style="display:inline-flex;align-items:center;gap:4px;background:#4163F5;color:#ffffff;border:none;cursor:pointer;padding:5px 9px;border-radius:6px;font-size:11px;font-weight:700;">
+              ⚡ Simulate Charging Here
+            </button>` : ''}
           </div>
         </div>
       `;
@@ -130,6 +135,15 @@ export default function LeafletMapView({
       marker.bindPopup(popupHtml, {
         className: 'custom-osm-popup',
         maxWidth: 280,
+      });
+
+      marker.on('popupopen', () => {
+        if (onSetSimulationContext) {
+          const btn = document.getElementById(`sim-btn-${station.id}`);
+          if (btn) {
+            btn.onclick = () => onSetSimulationContext(station);
+          }
+        }
       });
 
       marker.on('click', () => {
@@ -163,13 +177,13 @@ export default function LeafletMapView({
   }, [selectedStation]);
 
   return (
-    <div className="relative w-full h-[480px] rounded-2xl overflow-hidden border border-slate-800 shadow-xl bg-slate-950">
+    <div className="relative w-full h-[500px] rounded-3xl overflow-hidden border-2 border-[#111827] shadow-[5px_5px_0px_#111827] bg-white">
       {/* Leaflet Map Canvas */}
       <div ref={mapContainerRef} className="w-full h-full z-0" />
 
       {/* Floating Status Pill */}
-      <div className="absolute bottom-3 left-3 z-10 bg-slate-950/85 backdrop-blur-md border border-slate-800 rounded-lg px-3 py-1.5 text-[11px] text-slate-300 flex items-center gap-2 shadow-lg pointer-events-none">
-        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <div className="absolute bottom-3 left-3 z-10 bg-white border-2 border-[#111827] rounded-xl px-3.5 py-1.5 text-xs text-[#111827] font-bold flex items-center gap-2 shadow-[2px_2px_0px_#111827] pointer-events-none">
+        <span className="w-2.5 h-2.5 rounded-full bg-[#55BD8D] animate-pulse"></span>
         <span>OpenStreetMap + Leaflet · {stations.length} chargers mapped</span>
       </div>
     </div>
