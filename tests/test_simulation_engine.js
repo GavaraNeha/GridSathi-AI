@@ -127,7 +127,9 @@ async function runTests() {
 
   assert.equal(rSmartEmergency.slots.length, 10);
   assert.equal(rSmartEmergency.violations, 0);
-  // Emergency vehicle has tight deadline (due 0.5h = slot 0 only); Smart policy prioritizes urgent slack
+  // Emergency vehicle has tight impossible request (15 kWh in 0.5h); Feasibility-Aware Smart protects feasible EVs
+  assert(rSmartEmergency.onTime >= 3, 'Smart scheduling must achieve at least 3 on-time completions with emergency EV');
+  assert(rSmartEmergency.onTime >= rFcfsEmergency.onTime, 'Smart must match or exceed FCFS on-time count');
   console.log(` - Smart On-time with Emergency: ${rSmartEmergency.onTime}/${emergencyFleet.length}`);
   console.log(` - FCFS On-time with Emergency:  ${rFcfsEmergency.onTime}/${emergencyFleet.length}`);
 

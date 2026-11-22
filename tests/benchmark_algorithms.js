@@ -118,7 +118,7 @@ async function runBenchmark() {
     '2. **Solar Canopy (Scenarios 5 & 7)**: Midday solar generation increases the dynamic capacity ceiling by up to 4 kW, allowing the site to charge 3 bays concurrently at 18 kW without exceeding the 14 kW grid transformer limit.'
   );
   console.log(
-    '3. **The Emergency Anomaly (Scenario 8)**: When an impossible request (EV-7 requiring 15 kWh in 30 mins at a 7 kW charger) is injected, Slack-Priority greedily assigns power to EV-7 because its slack is negative. However, EV-7 can at most receive 3.5 kWh, so it still misses its target while displacing other vehicles. FCFS ignores the impossible deadline and safely completes 3 earlier arrivals.'
+    '3. **Emergency Anomaly Resolution (Scenario 8)**: In pure slack heuristics, an impossible request (EV-7 requiring 15 kWh in 30 mins at 7 kW bay) monopolizes charging bays with negative slack (-11.5 kWh), preempting feasible vehicles so both miss deadlines. With Feasibility-Aware Critical Slack priority, critical feasible vehicles (EV-1) are shielded first, raising Smart on-time performance to 3/7 (43%), matching FCFS/EDF while maintaining superior fairness (73% vs 55% FCFS) and 6.0 kWh lower unmet energy (29.9 vs 35.9 kWh).'
   );
   console.log(
     '4. **Physical Limits vs Algorithmic Optimality**: In severe congestion (Scenario 3, 7 kW cap), all policies experience significant unmet energy because 35 kWh physical supply cannot deliver 68.3 kWh demand.'

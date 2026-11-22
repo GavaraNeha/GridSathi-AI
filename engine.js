@@ -24,7 +24,8 @@ function run(vehicles,options={},mode='smart'){
   const siteLimit=gridCap+solarAt(t,solar),bayAssignments=Array(maxBays).fill(null);let left=siteLimit;
   const eligible=vehicles.map((ev,i)=>({ev,i,need:remaining[i],dueSlot:Math.round(ev.due*2),arrivalSlot:Math.round((ev.arrival||0)*2)})).filter(x=>x.need>0.000001&&x.arrivalSlot<=t&&t<x.dueSlot);
   const priority=x=>{if(mode==='fcfs')return [x.arrivalSlot,x.i];if(mode==='edf')return [x.dueSlot,x.i];
-    const availableSlots=Math.max(1,x.dueSlot-t),slack=availableSlots*3.5-x.need;return [slack,x.dueSlot,x.i]};
+    const maxP=x.ev.maxKw?Number(x.ev.maxKw):7,bLimit=Math.min(maxP,7),slotCap=bLimit*0.5,avail=Math.max(1,x.dueSlot-t),maxAchieve=avail*slotCap,slack=maxAchieve-x.need;
+    if(slack>=-1e-6&&slack<slotCap-1e-6)return [0,slack,x.dueSlot,x.i];if(slack<-1e-6)return [1,x.dueSlot,-slack,x.i];return [2,slack,x.dueSlot,x.i]};
   eligible.sort((a,b)=>{let p=priority(a),q=priority(b);for(let k=0;k<p.length;k++)if(p[k]!==q[k])return p[k]-q[k];return 0});
   // Each slot allocates a vehicle to at most one bay; max 7 kW per bay.
   for(let b=0;b<maxBays;b++){

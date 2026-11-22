@@ -85,10 +85,24 @@ export function runScheduler(vehicles, options = {}, mode = 'smart') {
     const priority = (x) => {
       if (mode === 'fcfs') return [x.arrivalSlot, x.i];
       if (mode === 'edf') return [x.dueSlot, x.i];
-      // Smart: slack-priority heuristic
+      // Smart: Feasibility-Aware Slack Priority
+      // Group 0 (Critical Feasible): 0 <= slack < slotCap. Must charge this slot or becomes infeasible.
+      // Group 1 (Imminent Infeasible / Emergency): slack < 0. Infeasible for 100%, best-effort charge before departure.
+      // Group 2 (Buffered Feasible): slack >= slotCap. Has >= 30 min buffer; safely yields to urgent needs.
+      const maxPower = x.ev.maxKw ? Number(x.ev.maxKw) : 7;
+      const bayLimit = Math.min(maxPower, 7);
+      const slotCap = bayLimit * 0.5;
       const availableSlots = Math.max(1, x.dueSlot - t);
-      const slack = availableSlots * 3.5 - x.need;
-      return [slack, x.dueSlot, x.i];
+      const maxAchievable = availableSlots * slotCap;
+      const slack = maxAchievable - x.need;
+
+      if (slack >= -1e-6 && slack < slotCap - 1e-6) {
+        return [0, slack, x.dueSlot, x.i];
+      } else if (slack < -1e-6) {
+        return [1, x.dueSlot, -slack, x.i];
+      } else {
+        return [2, slack, x.dueSlot, x.i];
+      }
     };
 
     eligible.sort((a, b) => {
