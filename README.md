@@ -16,6 +16,28 @@
 
 ---
 
+## Application Screenshots
+
+Visual walkthrough of the three operational modules deployed live at [grid-sathi-ai.vercel.app](https://grid-sathi-ai.vercel.app/):
+
+### 1. EV Discovery — Nationwide Charging Infrastructure
+![EV Discovery — Nationwide Charging Infrastructure](screenshots/01-ev-discovery.png)
+*Interactive Leaflet map and 0.1° spatial search indexing 28,553 authentic Indian charging stations with operator branding, connector types, and one-click simulation hand-off.*
+
+### 2. Microgrid Simulator — Constrained Multi-Bay Load Orchestration
+![Microgrid Simulator — Constrained Multi-Bay Load Orchestration](screenshots/02-microgrid-simulator.png)
+*Interactive simulated power-flow topology, transformer capacity constraints (14 kW default), simulated solar canopy generation, bay outage scenarios, and multi-policy dispatch comparison.*
+
+### 3. Charge Rescue — Vehicle Configuration & Station Finder
+![Charge Rescue — Vehicle Configuration & Station Finder](screenshots/03-charge-rescue.png)
+*Manual driver presets (10 Indian EV models), customizable battery SOC and safety reserve buffers, and truthful reachability rankings with unverified-route transparency.*
+
+### 4. Charge Rescue — Range Estimator, What-If Advisor & Grid Feasibility
+![Charge Rescue — Range Estimator, What-If Advisor & Grid Feasibility](screenshots/04-charge-rescue-results.png)
+*Reserve-adjusted usable range calculation, explainable What-If advice to resolve charging deficits, and multi-algorithm simulated microgrid charging feasibility audit. (Note: This screenshot captures an interactive test with a 20% weather buffer showing 30.1 km conservative safe range, whereas the default walkthrough baseline uses a 15% buffer showing 32 km).*
+
+---
+
 ## 1. Executive Overview & The Three Core Modules
 
 GridSathi AI addresses two interconnected challenges facing India's accelerating EV transition: **unreliable public charging discovery** and **severe electrical grid bottlenecking** when multiple EVs charge concurrently at transformer-constrained campuses, fleet depots, and commercial microgrids.
