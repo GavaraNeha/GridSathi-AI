@@ -2,15 +2,36 @@ import React from 'react';
 import { Award, AlertTriangle, AlertCircle } from 'lucide-react';
 
 export default function FeasibilityAudit({ result, vehicles, demand, mode }) {
-  const isShortage = (result?.unmet ?? 0) > 0.001;
-  const totalUnmet = Math.round(result?.unmet ?? 9);
+  const unmetKwh = result?.unmet ?? 0;
+  const isShortage = unmetKwh > 0.001;
+  const totalDemand = vehicles.reduce((a, v) => a + demand(v), 0);
+  const gridCap = result?.gridCap ?? result?.slots?.[0]?.gridLimit ?? 14;
+  const maxBays = result?.maxBays ?? 3;
+  const concurrentFullPowerBays = Math.min(maxBays, Math.floor(gridCap / 7));
 
-  // 10:00–11:00 urgent vehicles check (due <= 1 hour)
-  const urgentVehicles = vehicles.filter((v) => v.due <= 1);
-  const urgentNeed = urgentVehicles.reduce((a, v) => a + demand(v), 0);
-  const hourSupply = (result?.slots || [])
-    .slice(0, 2)
-    .reduce((a, s) => a + s.limit * 0.5, 0);
+  // Policy display name
+  const policyLabel =
+    mode === 'smart'
+      ? 'Smart Slack Optimizer'
+      : mode === 'edf'
+      ? 'Earliest Deadline First'
+      : 'First-Come First-Served';
+
+  // Per-vehicle hardware charging limit check (7 kW max bay charging speed)
+  const hardwareLimitedVehicles = vehicles
+    .map((v) => {
+      const need = demand(v);
+      const maxPower = v.maxKw ? Math.min(Number(v.maxKw), 7) : 7;
+      const staySlots = Math.max(
+        0,
+        Math.round((v.due ?? 1.5) * 2) - Math.round((v.arrival ?? 0) * 2)
+      );
+      const stayHours = staySlots * 0.5;
+      const maxAbsorbable = stayHours * maxPower;
+      const hardwareDeficit = Math.max(0, need - maxAbsorbable);
+      return { v, need, maxPower, stayHours, maxAbsorbable, hardwareDeficit };
+    })
+    .filter((x) => x.hardwareDeficit > 0.001);
 
   // Deficit vehicles list
   const impacted = vehicles
@@ -49,31 +70,48 @@ export default function FeasibilityAudit({ result, vehicles, demand, mode }) {
 
           <h3 className="text-base sm:text-lg font-black text-[#111827] tracking-tight mt-0.5">
             {isShortage
-              ? `Physical Grid Bottleneck — ${totalUnmet} kWh Unavoidable Energy Deficit`
+              ? `Physical Grid Bottleneck — ${unmetKwh.toFixed(1)} kWh Energy Deficit`
               : 'Zero Energy Deficit — All Fleet Demands Certified Feasible'}
           </h3>
         </div>
       </div>
 
-      {/* Urgent Window Box */}
+      {/* Fleet Demand vs Grid Constraints Overview Box */}
       <div className="bg-[#F8FAFC] border-2 border-[#111827] rounded-xl p-3">
         <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider block">
-          10:00–11:00 URGENT WINDOW
+          FLEET DEMAND & GRID CONSTRAINTS
         </span>
         <div className="text-sm sm:text-base font-black font-mono text-[#111827] mt-0.5">
-          {urgentNeed.toFixed(0)} kWh Req vs. {hourSupply.toFixed(0)} kWh Max Supply
+          {totalDemand.toFixed(1)} kWh Total Demand ({vehicles.length} EVs) vs. {gridCap} kW Grid Cap ({maxBays} Bays)
         </div>
       </div>
 
-      {/* Why every request cannot be satisfied */}
-      <div className="space-y-0.5 text-xs">
-        <span className="font-black text-[#E83D62] uppercase tracking-wider text-[10px] block">
-          WHY EVERY REQUEST CANNOT BE SIMULTANEOUSLY SATISFIED:
-        </span>
-        <p className="text-[#111827] font-medium leading-relaxed pl-1.5 text-xs">
-          • 10:00–11:00 Urgent Window needs {urgentNeed.toFixed(1)} kWh, but physical supply is capped at {hourSupply.toFixed(1)} kWh (3 bays @ {result?.slots?.[0]?.limit || 14} kW limit).
-        </p>
-      </div>
+      {/* Why every request cannot be simultaneously satisfied */}
+      {isShortage && (
+        <div className="space-y-1.5 text-xs">
+          <span className="font-black text-[#E83D62] uppercase tracking-wider text-[10px] block">
+            PHYSICAL CONSTRAINTS CAUSING ENERGY DEFICIT:
+          </span>
+          <div className="space-y-1 text-[#111827] font-medium leading-relaxed pl-1.5 text-xs">
+            <p>
+              • <strong className="font-bold">Transformer & Bay Concurrency Limit:</strong> Site power is capped at {gridCap} kW across {maxBays} physical bays. At 7 kW per charger, at most {concurrentFullPowerBays} bays can draw full power simultaneously without overloading the grid.
+            </p>
+            {hardwareLimitedVehicles.length > 0 ? (
+              <p>
+                • <strong className="font-bold">Per-Vehicle Hardware Limit:</strong>{' '}
+                {hardwareLimitedVehicles.map((h) => `${h.v.id} (${h.v.name || h.v.model || 'EV'}) requests ${h.need.toFixed(1)} kWh, but its ${h.stayHours.toFixed(1)}h parking window allows at most ${h.maxAbsorbable.toFixed(1)} kWh at ${h.maxPower} kW (${h.hardwareDeficit.toFixed(1)} kWh hardware deficit)`).join('; ')}.
+              </p>
+            ) : (
+              <p>
+                • <strong className="font-bold">Per-Vehicle Charging Limit:</strong> Each bay is capped at 7 kW max (3.5 kWh per 30-min slot), bounding the energy absorbable during short parking stays.
+              </p>
+            )}
+            <p>
+              • <strong className="font-bold">Overlapping Deadlines & Competition:</strong> Multiple vehicles compete for limited charging windows before departure. Under {policyLabel}, {result?.onTime ?? 0} of {vehicles.length} EVs meet their deadline, leaving {unmetKwh.toFixed(1)} kWh unmet across {impacted.length} impacted vehicles.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Impacted Vehicles Box */}
       {impacted.length > 0 && (

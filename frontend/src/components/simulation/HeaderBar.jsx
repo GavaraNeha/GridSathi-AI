@@ -7,8 +7,24 @@ export default function HeaderBar({
   comparison,
   onReset,
 }) {
-  const gainEvs = comparison?.gainEvs ?? 0;
-  const energySaved = comparison?.energySaved ?? 10.5;
+  const hasDiffOnTime = comparison && typeof comparison.diffOnTime === 'number';
+  const hasDiffEnergy = comparison && typeof comparison.diffEnergy === 'number';
+
+  const diffOnTime = hasDiffOnTime ? comparison.diffOnTime : null;
+  const diffEnergy = hasDiffEnergy ? comparison.diffEnergy : null;
+
+  const formatDiffEvs = (val) => {
+    if (val == null) return '—';
+    if (val > 0) return `+${val}`;
+    return `${val}`;
+  };
+
+  const formatDiffEnergy = (val) => {
+    if (val == null) return '—';
+    if (val > 0.001) return `+${val.toFixed(1)}`;
+    if (val < -0.001) return val.toFixed(1);
+    return '0.0';
+  };
 
   return (
     <div className="space-y-2.5">
@@ -57,16 +73,19 @@ export default function HeaderBar({
         {/* Action and Benchmark Metrics */}
         <div className="flex items-center gap-2 flex-wrap self-start md:self-auto">
           {/* Calculated vs FCFS Comparison Pill */}
-          <div className="bg-white border-2 border-[#111827] rounded-xl px-3 py-1.5 shadow-[2px_2px_0px_#111827] flex items-center gap-1.5">
+          <div
+            className="bg-white border-2 border-[#111827] rounded-xl px-3 py-1.5 shadow-[2px_2px_0px_#111827] flex items-center gap-1.5"
+            title="Calculated benchmark comparison versus First-Come (FCFS) baseline"
+          >
             <Sparkles className="w-3.5 h-3.5 text-[#55BD8D]" />
             <span className="text-xs font-bold text-[#111827]">
               vs FCFS:{' '}
               <span className="text-[#55BD8D] font-black font-mono">
-                +{gainEvs} EVs on-time
+                {formatDiffEvs(diffOnTime)} EVs on-time
               </span>{' '}
               <span className="text-slate-300">|</span>{' '}
               <span className="text-[#4163F5] font-black font-mono">
-                +{energySaved > 0 ? energySaved.toFixed(1) : '10.5'} kWh saved
+                {formatDiffEnergy(diffEnergy)} kWh additional energy delivered vs FCFS
               </span>
             </span>
           </div>
