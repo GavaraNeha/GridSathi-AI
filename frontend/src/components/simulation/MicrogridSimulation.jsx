@@ -51,7 +51,7 @@ export default function MicrogridSimulation({
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+    <div className="space-y-4 max-w-6xl mx-auto pb-8">
       {/* 1. Top Header & Algorithm Selector Bar */}
       <HeaderBar
         mode={mode}

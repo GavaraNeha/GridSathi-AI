@@ -5,13 +5,14 @@ import LeafletMapView from './components/LeafletMapView';
 import StationList from './components/StationList';
 import StatusBanner from './components/StatusBanner';
 import MicrogridSimulation from './components/simulation/MicrogridSimulation';
+import ChargeRescueView from './components/rescue/ChargeRescueView';
 import { useMicrogridEngine } from './hooks/useMicrogridEngine';
 import { fetchConfig, fetchStations, fetchSampleStations } from './services/api';
 import { MapPin, Globe } from 'lucide-react';
 
 export default function App() {
   const [config, setConfig] = useState(null);
-  const [activeTab, setActiveTab] = useState('simulation');
+  const [activeTab, setActiveTab] = useState('discovery');
   const [currentCity, setCurrentCity] = useState('Hyderabad');
   const [stations, setStations] = useState([]);
   const [cityCoords, setCityCoords] = useState({ lat: 17.3850, lng: 78.4867 });
@@ -107,39 +108,62 @@ export default function App() {
     setActiveTab('simulation');
   };
 
+  // Switch context from Rescue to Simulation
+  const handleRescueHandoffToSimulation = (station, rescueVehicle = null, targetSoc = 80, deadlineHours = 1.5) => {
+    if (station) {
+      setSimulationContextStation(station);
+      simulationEngine.applyStationContext(station);
+    }
+    if (rescueVehicle) {
+      const current = rescueVehicle.soc || 20;
+      const neededEnergy = (rescueVehicle.battery * Math.max(0, targetSoc - current)) / 100;
+      simulationEngine.addVehicle({
+        name: `${rescueVehicle.name} (Rescue)`,
+        battery: rescueVehicle.battery,
+        soc: current,
+        target: targetSoc,
+        energyReq: Math.round(neededEnergy * 10) / 10,
+        due: deadlineHours,
+        arrival: 0.0,
+        maxKw: rescueVehicle.maxKw || 7.0,
+      });
+    }
+    setActiveTab('simulation');
+  };
+
+  // Switch context from Rescue to Discovery map
+  const handleRescueHandoffToDiscovery = (station) => {
+    if (station) {
+      setSelectedStation(station);
+      if (station.lat && station.lng) {
+        setCityCoords({ lat: station.lat, lng: station.lng });
+      }
+    }
+    setActiveTab('discovery');
+  };
+
   return (
     <div className="min-h-screen bg-[#F7F5F0] text-[#111827] flex flex-col font-sans">
-      {/* Show Navbar on Discovery Tab */}
-      {activeTab === 'discovery' && (
-        <Navbar
-          config={config}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
-      )}
+      {/* Unified Top Navigation Bar (Always Visible Across Both Views) */}
+      <Navbar
+        config={config}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+      />
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Tab 1: Smart Microgrid (Primary View matching exact screenshot) */}
-        {activeTab === 'simulation' && (
-          <MicrogridSimulation
-            engine={simulationEngine}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-          />
-        )}
-
-        {/* Tab 2: Discovery & OpenStreetMap View */}
+      {/* Main Content Area — Strictly One Main View Rendered At A Time */}
+      <main className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-5 lg:px-6 py-3.5 sm:py-4">
+        {/* Tab 1: EV Station Discovery & OpenStreetMap View */}
         {activeTab === 'discovery' && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Search Bar Container */}
-            <div className="p-6 rounded-3xl bg-white border-2 border-[#111827] shadow-[5px_5px_0px_#111827]">
-              <div className="mb-4">
-                <span className="text-[11px] font-black text-[#4163F5] uppercase tracking-wider flex items-center gap-1.5">
+            <div className="p-4 sm:p-5 rounded-2xl bg-white border-2 border-[#111827] shadow-[3px_3px_0px_#111827]">
+              <div className="mb-3">
+                <span className="text-[10px] font-black text-[#4163F5] uppercase tracking-wider flex items-center gap-1.5">
                   <Globe className="w-3.5 h-3.5 text-[#55BD8D]" />
                   <span>OpenStreetMap & Overpass Discovery (India)</span>
                 </span>
-                <h2 className="text-xl sm:text-2xl font-black text-[#111827] tracking-tight mt-0.5">
+                <h2 className="text-lg sm:text-xl font-black text-[#111827] tracking-tight mt-0.5">
                   Locate Real EV Charging Stations Across India
                 </h2>
               </div>
@@ -153,7 +177,7 @@ export default function App() {
             </div>
 
             {/* Split View: Station Cards (Left) & Leaflet Map (Right) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-start">
               {/* Left Column: Station List (5 cols on lg) */}
               <div className="lg:col-span-5">
                 <StationList
@@ -171,7 +195,7 @@ export default function App() {
               </div>
 
               {/* Right Column: Leaflet Map (7 cols on lg) */}
-              <div className="lg:col-span-7 space-y-4">
+              <div className="lg:col-span-7 space-y-3">
                 <LeafletMapView
                   stations={stations}
                   selectedStation={selectedStation}
@@ -184,24 +208,25 @@ export default function App() {
 
                 {/* Selected Station Detail Card */}
                 {selectedStation && (
-                  <div className="p-5 rounded-3xl bg-white border-2 border-[#111827] shadow-[4px_4px_0px_#111827] space-y-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#55BD8D] text-white">
+                  <div className="p-3.5 sm:p-4 rounded-2xl bg-white border-2 border-[#111827] shadow-[2.5px_2.5px_0px_#111827] space-y-2.5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                      <div className="min-w-0">
+                        <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#55BD8D] text-white">
                           Selected Charging Hub
                         </span>
-                        <h3 className="text-lg font-black text-[#111827] mt-1">
+                        <h3 className="text-base font-black text-[#111827] mt-0.5 truncate">
                           {selectedStation.name}
                         </h3>
-                        <p className="text-xs text-[#64748B] flex items-center gap-1 mt-0.5 font-medium">
+                        <p className="text-xs text-[#64748B] flex items-center gap-1 mt-0.5 font-medium truncate">
                           <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           <span>{selectedStation.address}</span>
                         </p>
                       </div>
 
                       <button
+                        type="button"
                         onClick={() => handleSetSimulationContext(selectedStation)}
-                        className="px-4 py-2 rounded-xl bg-[#4163F5] hover:bg-[#3452d9] text-white text-xs font-black border-2 border-[#111827] shadow-[2px_2px_0px_#111827] transition-transform active:translate-y-0.5 flex items-center gap-1.5"
+                        className="px-3.5 py-1.5 rounded-xl bg-[#4163F5] hover:bg-[#3452d9] text-white text-xs font-black border-2 border-[#111827] shadow-[2px_2px_0px_#111827] transition-transform active:translate-y-0.5 flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
                       >
                         <span>Simulate Charging Here</span>
                       </button>
@@ -214,6 +239,23 @@ export default function App() {
             {/* Transparency Banner */}
             <StatusBanner simulationContextStation={simulationContextStation} />
           </div>
+        )}
+
+        {/* Tab 2: Microgrid Simulator View */}
+        {activeTab === 'simulation' && (
+          <MicrogridSimulation
+            engine={simulationEngine}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
+        )}
+
+        {/* Tab 3: Charge Rescue & Journey Intelligence View */}
+        {activeTab === 'rescue' && (
+          <ChargeRescueView
+            onSwitchToSimulation={handleRescueHandoffToSimulation}
+            onSwitchToDiscovery={handleRescueHandoffToDiscovery}
+          />
         )}
       </main>
     </div>

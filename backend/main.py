@@ -304,7 +304,8 @@ class DatasetManager:
             elif isinstance(c, str):
                 socket_items.append(c)
 
-        sockets_str = ", ".join(socket_items) if socket_items else "CCS2, Type 2"
+        sockets_str = ", ".join(socket_items) if socket_items else "Unspecified"
+        has_connector_data = bool(socket_items)
 
         # Capacity string
         n_points = s.get("n_points")
@@ -339,6 +340,10 @@ class DatasetManager:
             "capacity": capacity_str,
             "fee": pricing,
             "sockets": sockets_str,
+            "has_connector_data": has_connector_data,
+            "connectors": connectors if has_connector_data else [],
+            "max_power_kw": float(max_kw) if max_kw is not None else None,
+            "n_points": int(n_points) if n_points is not None else None,
             "source": "National EV Dataset (India)",
             "sources_count": n_src,
             "last_updated": last_up,
@@ -462,6 +467,10 @@ class StationListing(BaseModel):
     capacity: Optional[str] = Field(None, description="Number of bays or power capacity")
     fee: Optional[str] = Field(None, description="Fee / tariff info")
     sockets: Optional[str] = Field(None, description="Available socket connectors")
+    has_connector_data: Optional[bool] = Field(None, description="Whether authentic connector metadata is available")
+    connectors: Optional[List[Dict[str, Any]]] = Field(None, description="Detailed connector list")
+    max_power_kw: Optional[float] = Field(None, description="Maximum charging power rating in kW")
+    n_points: Optional[int] = Field(None, description="Total bay count")
     source: str = Field("National EV Dataset (India)", description="Data provenance")
     sources_count: Optional[int] = Field(None, description="Number of corroborating registry sources")
     last_updated: Optional[str] = Field(None, description="Metadata verification timestamp")
@@ -706,7 +715,8 @@ async def query_overpass_ev_stations(lat: float, lng: float, radius_meters: int 
                 "operator": operator,
                 "capacity": tags.get("capacity"),
                 "fee": tags.get("fee"),
-                "sockets": sockets_str,
+                "sockets": sockets_str or "Unspecified",
+                "has_connector_data": bool(socket_list),
                 "source": "OpenStreetMap",
             }
             stations.append(station_dict)
@@ -836,7 +846,8 @@ async def search_nominatim_ev_stations(city: str, lat: float, lng: float) -> Lis
                             "operator": operator,
                             "capacity": capacity,
                             "fee": fee,
-                            "sockets": ", ".join(sockets) if sockets else "Type 2, CCS2 (Standard)",
+                            "sockets": ", ".join(sockets) if sockets else "Unspecified",
+                            "has_connector_data": bool(sockets),
                             "source": "OpenStreetMap Nominatim (Live)",
                         })
             except Exception as exc:
@@ -1150,14 +1161,35 @@ async def get_sample_stations(
 
 
 # ==============================================================================
-# Preserved Legacy Prototype Serving (100% Backward Compatibility)
+# Unified Application Serving (React SPA + Preserved Legacy Prototype)
 # ==============================================================================
+FRONTEND_DIST = ROOT_DIR / "frontend" / "dist"
+
+if (FRONTEND_DIST / "assets").exists():
+    app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIST / "assets")), name="frontend_assets")
+
+
 @app.get("/", include_in_schema=False)
 async def serve_index():
-    index_file = ROOT_DIR / "index.html"
-    if index_file.exists():
-        return FileResponse(index_file)
+    # Prefer production-built compact React SPA when available
+    dist_index = FRONTEND_DIST / "index.html"
+    if dist_index.exists():
+        return FileResponse(dist_index)
+
+    # Fallback to root index.html
+    root_index = ROOT_DIR / "index.html"
+    if root_index.exists():
+        return FileResponse(root_index)
     return {"message": "GridSathi AI Backend running. Visit /docs for OpenAPI documentation."}
+
+
+@app.get("/legacy", include_in_schema=False)
+async def serve_legacy():
+    """Direct route to access the preserved legacy prototype."""
+    legacy_file = ROOT_DIR / "index.html"
+    if legacy_file.exists():
+        return FileResponse(legacy_file)
+    raise HTTPException(status_code=404, detail="Legacy prototype file not found.")
 
 
 if (ROOT_DIR / "styles.css").exists():

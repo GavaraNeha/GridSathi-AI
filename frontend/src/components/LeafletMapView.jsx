@@ -177,13 +177,13 @@ export default function LeafletMapView({
   }, [selectedStation]);
 
   return (
-    <div className="relative w-full h-[500px] rounded-3xl overflow-hidden border-2 border-[#111827] shadow-[5px_5px_0px_#111827] bg-white">
+    <div className="relative w-full h-[400px] sm:h-[420px] rounded-2xl overflow-hidden border-2 border-[#111827] shadow-[3px_3px_0px_#111827] bg-white">
       {/* Leaflet Map Canvas */}
       <div ref={mapContainerRef} className="w-full h-full z-0" />
 
       {/* Floating Status Pill */}
-      <div className="absolute bottom-3 left-3 z-10 bg-white border-2 border-[#111827] rounded-xl px-3.5 py-1.5 text-xs text-[#111827] font-bold flex items-center gap-2 shadow-[2px_2px_0px_#111827] pointer-events-none">
-        <span className="w-2.5 h-2.5 rounded-full bg-[#55BD8D] animate-pulse"></span>
+      <div className="absolute bottom-2.5 left-2.5 z-10 bg-white border-2 border-[#111827] rounded-lg px-2.5 py-1 text-[11px] text-[#111827] font-bold flex items-center gap-1.5 shadow-[1.5px_1.5px_0px_#111827] pointer-events-none">
+        <span className="w-2 h-2 rounded-full bg-[#55BD8D] animate-pulse"></span>
         <span>OpenStreetMap + Leaflet · {stations.length} chargers mapped</span>
       </div>
     </div>

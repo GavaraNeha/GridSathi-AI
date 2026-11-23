@@ -3,15 +3,15 @@ import { ShieldCheck, Info, Globe, Cpu } from 'lucide-react';
 
 export default function StatusBanner({ simulationContextStation }) {
   return (
-    <div className="bg-white border-2 border-[#111827] rounded-3xl p-5 text-xs text-slate-600 space-y-3 shadow-[4px_4px_0px_#111827]">
-      <div className="flex items-center gap-2 text-[#4163F5] font-black tracking-wider uppercase text-[11px]">
-        <ShieldCheck className="w-4 h-4 text-[#55BD8D]" />
+    <div className="bg-white border-2 border-[#111827] rounded-2xl p-3.5 sm:p-4 text-xs text-slate-600 space-y-2.5 shadow-[2.5px_2.5px_0px_#111827]">
+      <div className="flex items-center gap-2 text-[#4163F5] font-black tracking-wider uppercase text-[10px]">
+        <ShieldCheck className="w-3.5 h-3.5 text-[#55BD8D]" />
         <span>Open-Source Provenance & Simulation Transparency Notice</span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-slate-700">
-        <div className="space-y-1 bg-[#F8FAFC] border border-[#111827] rounded-2xl p-3.5">
-          <strong className="text-[#111827] flex items-center gap-1.5 font-black">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-slate-700">
+        <div className="space-y-1 bg-[#F8FAFC] border border-[#111827] rounded-xl p-2.5 sm:p-3">
+          <strong className="text-[#111827] flex items-center gap-1.5 font-black text-xs">
             <Globe className="w-3.5 h-3.5 text-[#55BD8D]" />
             <span>1. Authentic National EV Dataset (India)</span>
           </strong>
@@ -20,8 +20,8 @@ export default function StatusBanner({ simulationContextStation }) {
           </p>
         </div>
 
-        <div className="space-y-1 bg-[#F8FAFC] border border-[#111827] rounded-2xl p-3.5">
-          <strong className="text-[#111827] flex items-center gap-1.5 font-black">
+        <div className="space-y-1 bg-[#F8FAFC] border border-[#111827] rounded-xl p-2.5 sm:p-3">
+          <strong className="text-[#111827] flex items-center gap-1.5 font-black text-xs">
             <Cpu className="w-3.5 h-3.5 text-[#F5AD16]" />
             <span>2. Software Microgrid Simulation</span>
           </strong>

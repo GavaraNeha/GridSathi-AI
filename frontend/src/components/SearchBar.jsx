@@ -128,14 +128,14 @@ export default function SearchBar({ onSearch, onSearchNearMe, isLoading, current
   };
 
   return (
-    <div className="w-full space-y-3" ref={containerRef}>
-      <form onSubmit={handleSubmit} className="relative flex items-center gap-2.5">
+    <div className="w-full space-y-2.5" ref={containerRef}>
+      <form onSubmit={handleSubmit} className="relative flex items-center gap-2">
         <div className="relative flex-1">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
             {isFetchingSuggestions ? (
-              <Loader2 className="w-5 h-5 animate-spin text-[#4163F5]" />
+              <Loader2 className="w-4 h-4 animate-spin text-[#4163F5]" />
             ) : (
-              <Search className="w-5 h-5" />
+              <Search className="w-4 h-4" />
             )}
           </div>
 
@@ -145,23 +145,23 @@ export default function SearchBar({ onSearch, onSearchNearMe, isLoading, current
             onChange={handleInputChange}
             onFocus={() => suggestions.length > 0 && setShowDropdown(true)}
             placeholder="Search any Indian city, district, or PIN (e.g. Hyderabad, Vijayawada, Connaught Place)..."
-            className="w-full pl-11 pr-10 py-3 rounded-2xl bg-white border-2 border-[#111827] text-[#111827] placeholder:text-slate-400 font-bold text-sm shadow-[3px_3px_0px_#111827] focus:outline-none transition-all"
+            className="w-full pl-9 pr-8 py-2 rounded-xl bg-white border-2 border-[#111827] text-[#111827] placeholder:text-slate-400 font-bold text-xs sm:text-sm shadow-[2px_2px_0px_#111827] focus:outline-none transition-all"
           />
 
           {query && (
             <button
               type="button"
               onClick={handleClear}
-              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-[#111827]"
+              className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-[#111827]"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
           )}
 
           {/* Autocomplete Dropdown */}
           {showDropdown && suggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-[#111827] rounded-2xl shadow-[5px_5px_0px_#111827] z-50 overflow-hidden max-h-64 overflow-y-auto">
-              <div className="p-2 border-b border-slate-100 text-[10px] font-black uppercase text-slate-400 px-3">
+            <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border-2 border-[#111827] rounded-xl shadow-[3px_3px_0px_#111827] z-50 overflow-hidden max-h-60 overflow-y-auto">
+              <div className="p-1.5 border-b border-slate-100 text-[9px] font-black uppercase text-slate-400 px-3">
                 OpenStreetMap Geocoded Suggestions
               </div>
               {suggestions.map((item, idx) => (
@@ -169,9 +169,9 @@ export default function SearchBar({ onSearch, onSearchNearMe, isLoading, current
                   key={idx}
                   type="button"
                   onClick={() => handleSelectSuggestion(item.name || item.display_name)}
-                  className="w-full px-3.5 py-2.5 text-left text-xs font-bold text-[#111827] hover:bg-slate-100 flex items-center gap-2.5 border-b border-slate-50 last:border-0 transition-colors"
+                  className="w-full px-3 py-2 text-left text-xs font-bold text-[#111827] hover:bg-slate-100 flex items-center gap-2 border-b border-slate-50 last:border-0 transition-colors"
                 >
-                  <MapPin className="w-3.5 h-3.5 text-[#4163F5] shrink-0" />
+                  <MapPin className="w-3 h-3 text-[#4163F5] shrink-0" />
                   <span className="truncate">{item.display_name || item.name}</span>
                 </button>
               ))}
@@ -185,12 +185,12 @@ export default function SearchBar({ onSearch, onSearchNearMe, isLoading, current
           onClick={handleLocateNearMe}
           disabled={isLoading || isLocating}
           title="Locate EV chargers near my current GPS location"
-          className="px-3.5 py-3 rounded-2xl bg-white hover:bg-slate-100 text-[#111827] font-bold text-xs border-2 border-[#111827] shadow-[3px_3px_0px_#111827] transition-all disabled:opacity-50 flex items-center gap-1.5 shrink-0 active:translate-y-0.5"
+          className="px-3 py-2 rounded-xl bg-white hover:bg-slate-100 text-[#111827] font-bold text-xs border-2 border-[#111827] shadow-[2px_2px_0px_#111827] transition-all disabled:opacity-50 flex items-center gap-1.5 shrink-0 active:translate-y-0.5"
         >
           {isLocating ? (
-            <Loader2 className="w-4 h-4 animate-spin text-[#4163F5]" />
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-[#4163F5]" />
           ) : (
-            <Crosshair className="w-4 h-4 text-[#4163F5] stroke-[2.5]" />
+            <Crosshair className="w-3.5 h-3.5 text-[#4163F5] stroke-[2.5]" />
           )}
           <span className="hidden sm:inline">Near Me</span>
         </button>
@@ -199,12 +199,12 @@ export default function SearchBar({ onSearch, onSearchNearMe, isLoading, current
         <button
           type="submit"
           disabled={isLoading || query.trim().length < 2}
-          className="px-5 py-3 rounded-2xl bg-[#4163F5] hover:bg-[#3452d9] text-white font-black text-sm border-2 border-[#111827] shadow-[3px_3px_0px_#111827] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0 active:translate-y-0.5"
+          className="px-4 py-2 rounded-xl bg-[#4163F5] hover:bg-[#3452d9] text-white font-black text-xs sm:text-sm border-2 border-[#111827] shadow-[2px_2px_0px_#111827] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shrink-0 active:translate-y-0.5"
         >
           {isLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
           ) : (
-            <Search className="w-4 h-4 stroke-[2.5]" />
+            <Search className="w-3.5 h-3.5 stroke-[2.5]" />
           )}
           <span>Search</span>
         </button>
@@ -212,14 +212,14 @@ export default function SearchBar({ onSearch, onSearchNearMe, isLoading, current
 
       {/* Geolocation feedback / warning */}
       {geoError && (
-        <div className="px-3.5 py-2 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-semibold flex items-center justify-between">
+        <div className="px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-300 text-amber-900 text-xs font-semibold flex items-center justify-between">
           <span>{geoError}</span>
           <button
             type="button"
             onClick={() => setGeoError(null)}
             className="text-amber-700 hover:text-amber-950 ml-2"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3 h-3" />
           </button>
         </div>
       )}
@@ -237,9 +237,9 @@ export default function SearchBar({ onSearch, onSearchNearMe, isLoading, current
               setQuery(c);
               onSearch(c);
             }}
-            className={`px-3 py-1 rounded-xl text-xs font-bold transition-all shrink-0 border border-[#111827] ${
+            className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold transition-all shrink-0 border border-[#111827] ${
               currentCity?.toLowerCase() === c.toLowerCase()
-                ? 'bg-[#111827] text-white shadow-[2px_2px_0px_#111827]'
+                ? 'bg-[#111827] text-white shadow-[1.5px_1.5px_0px_#111827]'
                 : 'bg-white text-[#111827] hover:bg-slate-100 shadow-[1px_1px_0px_#111827]'
             }`}
           >

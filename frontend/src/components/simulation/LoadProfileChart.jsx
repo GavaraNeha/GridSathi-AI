@@ -14,11 +14,11 @@ export default function LoadProfileChart({ result, vehicles, colors }) {
   };
 
   return (
-    <div className="bg-white border-2 border-[#111827] rounded-3xl shadow-[5px_5px_0px_#111827] p-5 sm:p-6 space-y-4">
+    <div className="bg-white border-2 border-[#111827] rounded-2xl shadow-[3px_3px_0px_#111827] p-3.5 sm:p-4 space-y-3">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
         <div>
-          <h3 className="text-base sm:text-lg font-black text-[#111827] flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-[#4163F5]" />
+          <h3 className="text-sm sm:text-base font-black text-[#111827] flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-[#4163F5]" />
             <span>Site Power Load Curve & Grid Capacity Ceiling</span>
           </h3>
           <p className="text-xs text-[#64748B]">
@@ -26,14 +26,14 @@ export default function LoadProfileChart({ result, vehicles, colors }) {
           </p>
         </div>
 
-        <div className="flex items-center gap-4 text-xs font-mono">
+        <div className="flex items-center gap-3 text-xs font-mono">
           <div className="flex items-center gap-1.5">
-            <span className="w-3.5 h-1 border-t-2 border-dashed border-[#F5AD16] block"></span>
-            <span className="text-slate-600 font-bold">Site Limit</span>
+            <span className="w-3 h-0.5 border-t-2 border-dashed border-[#F5AD16] block"></span>
+            <span className="text-slate-600 font-bold text-[11px]">Site Limit</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-[#4163F5] block"></span>
-            <span className="text-slate-600 font-bold">EV Power Draw</span>
+            <span className="w-2 h-2 rounded-sm bg-[#4163F5] block"></span>
+            <span className="text-slate-600 font-bold text-[11px]">EV Power Draw</span>
           </div>
         </div>
       </div>

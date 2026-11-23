@@ -22,11 +22,11 @@ export default function ScheduleRibbon({ result, vehicles, colors, disruptionDif
   };
 
   return (
-    <div className="bg-white border-2 border-[#111827] rounded-3xl shadow-[5px_5px_0px_#111827] p-5 sm:p-6 space-y-4">
+    <div className="bg-white border-2 border-[#111827] rounded-2xl shadow-[3px_3px_0px_#111827] p-3.5 sm:p-4 space-y-3">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div>
-          <h3 className="text-base sm:text-lg font-black text-[#111827]">
+          <h3 className="text-sm sm:text-base font-black text-[#111827]">
             Multi-Track Charging Ribbon & Departure Flags
           </h3>
           <p className="text-xs text-[#64748B]">
@@ -36,21 +36,21 @@ export default function ScheduleRibbon({ result, vehicles, colors, disruptionDif
 
         <div className="flex items-center gap-2 flex-wrap self-start sm:self-auto shrink-0">
           {disruptionDiff && (
-            <div className="bg-[#FEF3C7] text-[#B45309] border border-[#F5AD16] rounded-full px-3 py-1 text-xs font-bold flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#F5AD16] animate-pulse" />
+            <div className="bg-[#FEF3C7] text-[#B45309] border border-[#F5AD16] rounded-full px-2.5 py-0.5 text-xs font-bold flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#F5AD16] animate-pulse" />
               <span>Shifted Allocation</span>
             </div>
           )}
-          <div className="bg-[#FFE4E6] text-[#E83D62] border border-[#E83D62]/40 rounded-full px-3 py-1 text-xs font-bold flex items-center gap-1.5">
-            <Flag className="w-3.5 h-3.5 fill-[#E83D62]" />
+          <div className="bg-[#FFE4E6] text-[#E83D62] border border-[#E83D62]/40 rounded-full px-2.5 py-0.5 text-xs font-bold flex items-center gap-1">
+            <Flag className="w-3 h-3 fill-[#E83D62]" />
             <span>Red Flag = Departure Deadline</span>
           </div>
         </div>
       </div>
 
       {/* Ribbon Matrix Table */}
-      <div className="overflow-x-auto pb-2">
-        <div className="min-w-[760px] space-y-2">
+      <div className="overflow-x-auto pb-1.5">
+        <div className="min-w-[700px] space-y-1.5">
           {/* Header Row: Charger & Slots */}
           <div className="grid grid-cols-[100px_repeat(10,1fr)] gap-2 items-center">
             {/* Charger Label Pill */}
@@ -99,7 +99,7 @@ export default function ScheduleRibbon({ result, vehicles, colors, disruptionDif
                     return (
                       <div
                         key={slotIdx}
-                        className="bg-red-50/60 border border-red-300 rounded-xl h-11 flex items-center justify-center text-[10px] font-black text-red-500"
+                        className="bg-red-50/60 border border-red-300 rounded-lg h-9 flex items-center justify-center text-[9px] font-black text-red-500"
                         title="Bay offline due to hardware fault"
                       >
                         OFFLINE
@@ -115,7 +115,7 @@ export default function ScheduleRibbon({ result, vehicles, colors, disruptionDif
                     return (
                       <div
                         key={slotIdx}
-                        className="bg-[#F8FAFC] border border-slate-200 rounded-xl h-11 flex items-center justify-center text-xs font-mono text-slate-400"
+                        className="bg-[#F8FAFC] border border-slate-200 rounded-lg h-9 flex items-center justify-center text-xs font-mono text-slate-400"
                       >
                         --
                       </div>
@@ -136,7 +136,7 @@ export default function ScheduleRibbon({ result, vehicles, colors, disruptionDif
                   return (
                     <div
                       key={slotIdx}
-                      className={`rounded-xl h-11 p-1 flex flex-col justify-center items-center text-center text-white relative shadow-sm border ${
+                      className={`rounded-lg h-9 p-0.5 flex flex-col justify-center items-center text-center text-white relative shadow-xs border ${
                         isShifted ? 'ring-2 ring-[#F5AD16] border-white' : 'border-black/20'
                       }`}
                       style={{ backgroundColor: carBg }}

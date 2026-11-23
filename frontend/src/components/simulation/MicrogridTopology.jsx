@@ -141,27 +141,27 @@ export default function MicrogridTopology({
   }, [capacity, events, mode, vehicles]);
 
   return (
-    <div className="bg-white border-2 border-[#111827] rounded-3xl shadow-[5px_5px_0px_#111827] p-5 sm:p-7 space-y-4">
+    <div className="bg-white border-2 border-[#111827] rounded-2xl shadow-[3px_3px_0px_#111827] p-3.5 sm:p-5 space-y-3">
       {/* Top Header of Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5">
         <div>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span className="bg-[#4163F5] text-white text-[11px] font-black px-2.5 py-1 rounded-md tracking-wider uppercase">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="bg-[#4163F5] text-white text-[9px] font-black px-2 py-0.5 rounded-md tracking-wider uppercase">
               LIVE TOPOLOGY · 10:00 SLOT
             </span>
-            <h2 className="text-xl sm:text-2xl font-black text-[#111827] tracking-tight">
+            <h2 className="text-base sm:text-lg font-black text-[#111827] tracking-tight">
               Microgrid Power Flow & Smart Charging Bays
             </h2>
           </div>
-          <p className="text-xs text-[#64748B] font-medium mt-1">
+          <p className="text-xs text-[#64748B] font-medium mt-0.5">
             Click any EV bay or queued car to inspect its live current pulse, battery fill, and deadline buffer.
           </p>
         </div>
 
         {/* Active Draw Indicator */}
-        <div className="flex items-center gap-2 bg-white border-2 border-[#111827] rounded-xl px-3.5 py-1.5 shadow-[2px_2px_0px_#111827] shrink-0 self-start md:self-auto">
-          <Gauge className="w-4 h-4 text-[#4163F5]" />
-          <span className="text-sm font-bold text-[#111827]">
+        <div className="flex items-center gap-2 bg-white border-2 border-[#111827] rounded-xl px-2.5 py-1 shadow-[1.5px_1.5px_0px_#111827] shrink-0 self-start md:self-auto">
+          <Gauge className="w-3.5 h-3.5 text-[#4163F5]" />
+          <span className="text-xs font-bold text-[#111827]">
             Active Draw:{' '}
             <span className="text-[#4163F5] font-black font-mono">
               {activeLoad.toFixed(1)}
@@ -174,7 +174,7 @@ export default function MicrogridTopology({
       {/* Main Canvas with Grid Background */}
       <div
         ref={containerRef}
-        className="border-2 border-[#111827] rounded-2xl bg-[#FAFAF8] topology-grid p-6 sm:p-8 relative min-h-[460px] overflow-hidden"
+        className="border-2 border-[#111827] rounded-xl bg-[#FAFAF8] topology-grid p-3.5 sm:p-5 relative min-h-[330px] overflow-hidden"
       >
         {/* SVG Power Lines Layer */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
@@ -245,24 +245,24 @@ export default function MicrogridTopology({
         </svg>
 
         {/* 3-Column Node Elements Grid */}
-        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-8 min-h-[380px]">
+        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-4 sm:gap-6 min-h-[290px]">
           {/* Left Column: Power Sources */}
-          <div className="flex flex-col justify-around gap-6 w-full lg:w-56 shrink-0">
+          <div className="flex flex-col justify-around gap-3.5 w-full lg:w-48 shrink-0">
             {/* GRID FEEDER CARD */}
             <div
               ref={feederRef}
-              className="bg-white border-2 border-[#111827] rounded-2xl p-4 shadow-[3px_3px_0px_#111827]"
+              className="bg-white border-2 border-[#111827] rounded-xl p-3 shadow-[2px_2px_0px_#111827]"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] border border-[#C7D2FE] flex items-center justify-center text-[#4163F5] shrink-0">
-                  <Zap className="w-5 h-5 fill-[#4163F5]" />
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#EEF2FF] border border-[#C7D2FE] flex items-center justify-center text-[#4163F5] shrink-0">
+                  <Zap className="w-4 h-4 fill-[#4163F5]" />
                 </div>
                 <div>
-                  <span className="text-[11px] font-black tracking-wider text-[#111827] block">
+                  <span className="text-[10px] font-black tracking-wider text-[#111827] block">
                     GRID FEEDER
                   </span>
                   <span
-                    className={`text-[10px] font-bold ${
+                    className={`text-[9px] font-bold ${
                       isBrownout ? 'text-[#E83D62]' : 'text-[#4163F5]'
                     }`}
                   >
@@ -270,11 +270,11 @@ export default function MicrogridTopology({
                   </span>
                 </div>
               </div>
-              <div className="mt-3 pt-2 border-t border-slate-100 flex items-baseline justify-between">
-                <span className="text-lg font-black font-mono text-[#111827]">
+              <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-baseline justify-between">
+                <span className="text-base font-black font-mono text-[#111827]">
                   {capacity.toFixed(1)} kW
                 </span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase">
+                <span className="text-[9px] font-bold text-slate-400 uppercase">
                   MAX
                 </span>
               </div>
@@ -283,30 +283,30 @@ export default function MicrogridTopology({
             {/* SOLAR CANOPY CARD */}
             <div
               ref={solarRef}
-              className="bg-white border-2 border-[#111827] rounded-2xl p-4 shadow-[3px_3px_0px_#111827]"
+              className="bg-white border-2 border-[#111827] rounded-xl p-3 shadow-[2px_2px_0px_#111827]"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#FEF3C7] border border-[#FDE68A] flex items-center justify-center text-[#F5AD16] shrink-0">
-                  <Sun className="w-5 h-5 fill-[#F5AD16]" />
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#FEF3C7] border border-[#FDE68A] flex items-center justify-center text-[#F5AD16] shrink-0">
+                  <Sun className="w-4 h-4 fill-[#F5AD16]" />
                 </div>
                 <div>
-                  <span className="text-[11px] font-black tracking-wider text-[#111827] block">
+                  <span className="text-[10px] font-black tracking-wider text-[#111827] block">
                     SOLAR CANOPY
                   </span>
                   <span
-                    className={`text-[10px] font-bold ${
+                    className={`text-[9px] font-bold ${
                       isSolarActive ? 'text-[#55BD8D]' : 'text-slate-400'
                     }`}
                   >
-                    {isSolarActive ? 'ACTIVE GENERATING' : 'STANDBY MODE'}
+                    {isSolarActive ? 'ACTIVE BOOST' : 'STANDBY MODE'}
                   </span>
                 </div>
               </div>
-              <div className="mt-3 pt-2 border-t border-slate-100 flex items-baseline justify-between">
-                <span className="text-lg font-black font-mono text-[#111827]">
+              <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-baseline justify-between">
+                <span className="text-base font-black font-mono text-[#111827]">
                   {solarBoost.toFixed(1)} kW
                 </span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase">
+                <span className="text-[9px] font-bold text-slate-400 uppercase">
                   BOOST
                 </span>
               </div>
@@ -314,21 +314,21 @@ export default function MicrogridTopology({
           </div>
 
           {/* Center Column: GridSathi Core Brain */}
-          <div className="flex justify-center my-4 lg:my-0">
+          <div className="flex justify-center my-3 lg:my-0">
             <div
               ref={coreRef}
-              className="bg-[#111827] text-white border-2 border-[#111827] rounded-3xl p-5 sm:p-6 shadow-[5px_5px_0px_rgba(17,24,39,0.3)] w-60 sm:w-64 text-center relative"
+              className="bg-[#111827] text-white border-2 border-[#111827] rounded-2xl p-4 sm:p-5 shadow-[4px_4px_0px_rgba(17,24,39,0.3)] w-52 sm:w-56 text-center relative"
             >
               {/* Brain Icon in glowing badge */}
-              <div className="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-pink-500/20 to-purple-500/20 border border-pink-400/30 flex items-center justify-center text-pink-400 shadow-md">
-                <Brain className="w-6 h-6" />
+              <div className="w-10 h-10 mx-auto rounded-xl bg-gradient-to-tr from-pink-500/20 to-purple-500/20 border border-pink-400/30 flex items-center justify-center text-pink-400 shadow-md">
+                <Brain className="w-5 h-5" />
               </div>
 
-              <h3 className="text-sm font-black tracking-widest text-white mt-3">
+              <h3 className="text-xs font-black tracking-widest text-white mt-2.5">
                 GRIDSATHI CORE
               </h3>
 
-              <div className="text-[11px] font-bold text-[#38BDF8] tracking-wider mt-0.5">
+              <div className="text-[10px] font-bold text-[#38BDF8] tracking-wider mt-0.5">
                 {mode === 'smart'
                   ? 'SMART SLACK DISPATCH'
                   : mode === 'edf'
@@ -337,43 +337,43 @@ export default function MicrogridTopology({
               </div>
 
               {/* Dispatch power pill */}
-              <div className="mt-3 inline-block bg-[#F5AD16]/20 border border-[#F5AD16]/40 text-[#F5AD16] font-mono text-xs font-black px-3 py-1 rounded-md">
+              <div className="mt-2.5 inline-block bg-[#F5AD16]/20 border border-[#F5AD16]/40 text-[#F5AD16] font-mono text-[11px] font-black px-2.5 py-0.5 rounded-md">
                 DISPATCH: {activeLoad.toFixed(1)} kW
               </div>
             </div>
           </div>
 
           {/* Right Column: 3 Smart Charging Bays */}
-          <div className="flex flex-col gap-3.5 w-full lg:w-72 shrink-0">
+          <div className="flex flex-col gap-2 w-full lg:w-64 shrink-0">
             {/* BAY 01 */}
             <div
               ref={bay1Ref}
               onClick={() => onSelectBay && onSelectBay(0)}
-              className="bg-white border-2 border-[#4163F5] rounded-2xl p-3.5 shadow-[3px_3px_0px_#111827] hover:-translate-y-0.5 transition-transform cursor-pointer"
+              className="bg-white border-2 border-[#4163F5] rounded-xl p-2.5 shadow-[2px_2px_0px_#111827] hover:-translate-y-0.5 transition-transform cursor-pointer"
             >
               <div className="flex items-center justify-between">
-                <span className="bg-[#111827] text-white text-[10px] font-black px-2.5 py-0.5 rounded-md">
+                <span className="bg-[#111827] text-white text-[9px] font-black px-2 py-0.5 rounded-md">
                   BAY 01
                 </span>
-                <span className="bg-[#E83D62] text-white text-[11px] font-black px-2.5 py-0.5 rounded-md font-mono">
+                <span className="bg-[#E83D62] text-white text-[10px] font-black px-2 py-0.5 rounded-md font-mono">
                   {bay1Kw.toFixed(1)} kW
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 text-xs font-black text-[#111827] mt-2 truncate">
+              <div className="flex items-center gap-1.5 text-xs font-black text-[#111827] mt-1.5 truncate">
                 <Car className="w-3.5 h-3.5 text-[#E83D62] shrink-0" />
                 <span className="truncate">
                   {bay1Ev ? `${bay1Ev.id} · ${bay1Name}` : 'EV-1 · Tata Nexon EV'}
                 </span>
               </div>
               {/* Battery progress */}
-              <div className="mt-2 flex items-center gap-2">
-                <div className="flex-1 bg-slate-100 border border-[#111827] rounded-full h-3 relative overflow-hidden">
+              <div className="mt-1.5 flex items-center gap-2">
+                <div className="flex-1 bg-slate-100 border border-[#111827] rounded-full h-2 relative overflow-hidden">
                   <div
                     className="h-full bg-[#E83D62] transition-all duration-500 rounded-full"
                     style={{ width: `${bay1Soc}%` }}
                   />
                 </div>
-                <span className="text-[10px] font-black font-mono text-[#111827]">
+                <span className="text-[9px] font-black font-mono text-[#111827]">
                   {bay1Soc}% SoC
                 </span>
               </div>
@@ -383,31 +383,31 @@ export default function MicrogridTopology({
             <div
               ref={bay2Ref}
               onClick={() => onSelectBay && onSelectBay(1)}
-              className="bg-white border-2 border-[#111827] rounded-2xl p-3.5 shadow-[3px_3px_0px_#111827] hover:-translate-y-0.5 transition-transform cursor-pointer"
+              className="bg-white border-2 border-[#111827] rounded-xl p-2.5 shadow-[2px_2px_0px_#111827] hover:-translate-y-0.5 transition-transform cursor-pointer"
             >
               <div className="flex items-center justify-between">
-                <span className="bg-[#111827] text-white text-[10px] font-black px-2.5 py-0.5 rounded-md">
+                <span className="bg-[#111827] text-white text-[9px] font-black px-2 py-0.5 rounded-md">
                   BAY 02
                 </span>
-                <span className="bg-[#F5AD16] text-white text-[11px] font-black px-2.5 py-0.5 rounded-md font-mono">
+                <span className="bg-[#F5AD16] text-white text-[10px] font-black px-2 py-0.5 rounded-md font-mono">
                   {bay2Kw.toFixed(1)} kW
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 text-xs font-black text-[#111827] mt-2 truncate">
+              <div className="flex items-center gap-1.5 text-xs font-black text-[#111827] mt-1.5 truncate">
                 <Car className="w-3.5 h-3.5 text-[#F5AD16] shrink-0" />
                 <span className="truncate">
                   {bay2Ev ? `${bay2Ev.id} · ${bay2Name}` : 'EV-6 · Mahindra XUV400'}
                 </span>
               </div>
               {/* Battery progress */}
-              <div className="mt-2 flex items-center gap-2">
-                <div className="flex-1 bg-slate-100 border border-[#111827] rounded-full h-3 relative overflow-hidden">
+              <div className="mt-1.5 flex items-center gap-2">
+                <div className="flex-1 bg-slate-100 border border-[#111827] rounded-full h-2 relative overflow-hidden">
                   <div
                     className="h-full bg-[#F5AD16] transition-all duration-500 rounded-full"
                     style={{ width: `${bay2Soc}%` }}
                   />
                 </div>
-                <span className="text-[10px] font-black font-mono text-[#111827]">
+                <span className="text-[9px] font-black font-mono text-[#111827]">
                   {bay2Soc}% SoC
                 </span>
               </div>
@@ -417,44 +417,44 @@ export default function MicrogridTopology({
             <div
               ref={bay3Ref}
               onClick={() => onSelectBay && onSelectBay(2)}
-              className={`bg-white border-2 rounded-2xl p-3.5 shadow-[3px_3px_0px_#111827] hover:-translate-y-0.5 transition-transform cursor-pointer ${
+              className={`bg-white border-2 rounded-xl p-2.5 shadow-[2px_2px_0px_#111827] hover:-translate-y-0.5 transition-transform cursor-pointer ${
                 isBay3Fault ? 'border-[#EF4444] bg-red-50/40' : 'border-[#111827]'
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="bg-[#111827] text-white text-[10px] font-black px-2.5 py-0.5 rounded-md">
+                <span className="bg-[#111827] text-white text-[9px] font-black px-2 py-0.5 rounded-md">
                   BAY 03
                 </span>
                 {isBay3Fault ? (
-                  <span className="bg-[#EF4444] text-white text-[10px] font-black px-2 py-0.5 rounded-md uppercase">
+                  <span className="bg-[#EF4444] text-white text-[9px] font-black px-2 py-0.5 rounded-md uppercase">
                     OFFLINE (FAULT)
                   </span>
                 ) : bay3Kw > 0 ? (
-                  <span className="bg-[#4163F5] text-white text-[11px] font-black px-2.5 py-0.5 rounded-md font-mono">
+                  <span className="bg-[#4163F5] text-white text-[10px] font-black px-2 py-0.5 rounded-md font-mono">
                     {bay3Kw.toFixed(1)} kW
                   </span>
                 ) : (
-                  <span className="text-slate-500 text-[11px] font-bold font-mono">
+                  <span className="text-slate-500 text-[10px] font-bold font-mono">
                     BAY READY (7kW)
                   </span>
                 )}
               </div>
 
               {isBay3Fault ? (
-                <div className="mt-2 text-xs text-red-600 font-bold flex items-center gap-1.5">
+                <div className="mt-1.5 text-xs text-red-600 font-bold flex items-center gap-1.5">
                   <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
                   <span>Hardware trip / Offline</span>
                 </div>
               ) : bay3Ev ? (
                 <>
-                  <div className="flex items-center gap-1.5 text-xs font-black text-[#111827] mt-2 truncate">
+                  <div className="flex items-center gap-1.5 text-xs font-black text-[#111827] mt-1.5 truncate">
                     <Car className="w-3.5 h-3.5 text-[#4163F5] shrink-0" />
                     <span className="truncate">
                       {bay3Ev.id} · {bay3Name}
                     </span>
                   </div>
-                  <div className="mt-2 flex items-center gap-2">
-                    <div className="flex-1 bg-slate-100 border border-[#111827] rounded-full h-3 relative overflow-hidden">
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <div className="flex-1 bg-slate-100 border border-[#111827] rounded-full h-2 relative overflow-hidden">
                       <div
                         className="h-full bg-[#4163F5] transition-all duration-500 rounded-full"
                         style={{ width: `${bay3Soc}%` }}

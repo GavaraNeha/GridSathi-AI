@@ -42,34 +42,34 @@ export default function StationList({
   const hasLiveStations = stations.some((s) => s.source?.toLowerCase().includes('live'));
 
   return (
-    <div className="bg-white border-2 border-[#111827] rounded-3xl p-5 sm:p-6 shadow-[5px_5px_0px_#111827] space-y-4">
+    <div className="bg-white border-2 border-[#111827] rounded-2xl p-3.5 sm:p-4 shadow-[3px_3px_0px_#111827] space-y-3">
       {/* Header and Filter Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b-2 border-slate-100">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-100">
         <div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <h2 className="text-lg sm:text-xl font-black text-[#111827]">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <h2 className="text-base sm:text-lg font-black text-[#111827]">
               EV Charging Stations
             </h2>
             {city && (
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#111827] text-white font-mono">
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#111827] text-white font-mono">
                 {city}
               </span>
             )}
             {hasLiveStations ? (
-              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300">
+              <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300">
                 ● Live OSM
               </span>
             ) : isSampleData ? (
-              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-300">
+              <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-md bg-amber-100 text-amber-800 border border-amber-300">
                 Sample Data
               </span>
             ) : stations.length > 0 ? (
-              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 border border-blue-300">
+              <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-md bg-blue-100 text-blue-800 border border-blue-300">
                 ● National EV Dataset (28k+)
               </span>
             ) : null}
           </div>
-          <p className="text-xs text-[#64748B] mt-0.5 font-medium">
+          <p className="text-[11px] text-[#64748B] mt-0.5 font-medium">
             {isSampleData ? (
               <span className="text-[#F5AD16] font-bold flex items-center gap-1">
                 <Database className="w-3.5 h-3.5" />
@@ -87,11 +87,11 @@ export default function StationList({
         </div>
 
         {/* Filters & Sorting */}
-        <div className="flex items-center gap-2 text-xs flex-wrap">
+        <div className="flex items-center gap-1.5 text-xs flex-wrap">
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="bg-[#F8FAFC] border-2 border-[#111827] text-[#111827] rounded-xl px-2.5 py-1 font-bold shadow-[2px_2px_0px_#111827] focus:outline-none"
+            className="bg-[#F8FAFC] border border-[#111827] text-[#111827] rounded-lg px-2 py-1 font-bold shadow-[1.5px_1.5px_0px_#111827] focus:outline-none text-[11px]"
           >
             <option value="distance">Nearest First</option>
             <option value="default">Default Order</option>
@@ -100,7 +100,7 @@ export default function StationList({
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="bg-[#F8FAFC] border-2 border-[#111827] text-[#111827] rounded-xl px-2.5 py-1 font-bold shadow-[2px_2px_0px_#111827] focus:outline-none"
+            className="bg-[#F8FAFC] border border-[#111827] text-[#111827] rounded-lg px-2 py-1 font-bold shadow-[1.5px_1.5px_0px_#111827] focus:outline-none text-[11px]"
           >
             <option value="all">All ({stations.length})</option>
             <option value="branded">With Operator</option>
@@ -138,7 +138,7 @@ export default function StationList({
 
       {/* Stations List Container */}
       {!isLoading && filteredStations.length > 0 && (
-        <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+        <div className="space-y-2.5 max-h-[410px] overflow-y-auto pr-1">
           {filteredStations.map((station) => (
             <StationCard
               key={station.id}

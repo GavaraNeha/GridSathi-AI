@@ -34,26 +34,27 @@ export default function FleetInspector({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Header Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <h3 className="text-sm sm:text-base font-black tracking-wider uppercase text-[#111827]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <h3 className="text-xs sm:text-sm font-black tracking-wider uppercase text-[#111827]">
           CONNECTED FLEET ({vehicles.length} VEHICLES) — CLICK TO INSPECT
         </h3>
 
         {onOpenAddModal && (
           <button
+            type="button"
             onClick={onOpenAddModal}
-            className="bg-[#55BD8D] hover:bg-[#46a87b] text-white text-xs font-black px-3.5 py-1.5 rounded-xl border-2 border-[#111827] shadow-[2px_2px_0px_#111827] flex items-center gap-1.5 self-start sm:self-auto transition-transform active:translate-y-0.5"
+            className="bg-[#55BD8D] hover:bg-[#46a87b] text-white text-xs font-black px-2.5 py-1 rounded-lg border-2 border-[#111827] shadow-[1.5px_1.5px_0px_#111827] flex items-center gap-1 self-start sm:self-auto transition-transform active:translate-y-0.5"
           >
-            <Plus className="w-4 h-4 stroke-[3]" />
+            <Plus className="w-3.5 h-3.5 stroke-[3]" />
             <span>Add EV</span>
           </button>
         )}
       </div>
 
       {/* 6 Responsive Fleet Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
         {vehicles.map((v, idx) => {
           const isSelected = idx === currentIdx;
           const carColor = getColor(idx);
@@ -67,7 +68,7 @@ export default function FleetInspector({
             <div
               key={v.id || idx}
               onClick={() => onSelectVehicle(idx)}
-              className={`bg-white border-2 rounded-2xl p-3 shadow-[3px_3px_0px_#111827] cursor-pointer transition-all hover:-translate-y-0.5 ${
+              className={`bg-white border-2 rounded-xl p-2.5 shadow-[2px_2px_0px_#111827] cursor-pointer transition-all hover:-translate-y-0.5 ${
                 isSelected
                   ? 'border-[#4163F5] ring-2 ring-[#4163F5] bg-blue-50/30'
                   : 'border-[#111827]'
@@ -76,14 +77,14 @@ export default function FleetInspector({
               {/* ID & Status Pill */}
               <div className="flex items-center justify-between">
                 <span
-                  className="text-white text-[10px] font-black px-2 py-0.5 rounded-md"
+                  className="text-white text-[9px] font-black px-1.5 py-0.5 rounded"
                   style={{ backgroundColor: carColor }}
                 >
                   {v.id}
                 </span>
 
                 <span
-                  className={`text-[9px] font-black uppercase px-1.5 py-0.2 rounded ${
+                  className={`text-[8px] font-black uppercase px-1.5 py-0.2 rounded ${
                     isDone
                       ? 'bg-emerald-100 text-emerald-800'
                       : isUrgent
@@ -96,13 +97,13 @@ export default function FleetInspector({
               </div>
 
               {/* Model */}
-              <div className="text-xs font-black text-[#111827] truncate mt-2">
+              <div className="text-[11px] font-black text-[#111827] truncate mt-1.5">
                 {v.name || v.model}
               </div>
 
               {/* Battery Bar & SoC */}
-              <div className="mt-2 space-y-1">
-                <div className="w-full bg-slate-100 border border-[#111827] rounded-full h-2 relative overflow-hidden">
+              <div className="mt-1.5 space-y-0.5">
+                <div className="w-full bg-slate-100 border border-[#111827] rounded-full h-1.5 relative overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-300"
                     style={{
@@ -111,16 +112,16 @@ export default function FleetInspector({
                     }}
                   />
                 </div>
-                <div className="flex justify-between text-[10px] font-mono">
-                  <span className="text-slate-500 font-bold">{v.soc}% SoC</span>
+                <div className="flex justify-between text-[9px] font-mono">
+                  <span className="text-slate-500 font-bold">{v.soc}%</span>
                   <span className="text-slate-700 font-bold">🎯 {v.target}%</span>
                 </div>
               </div>
 
               {/* Departure Badge */}
-              <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center justify-between text-[10px] font-bold">
+              <div className="mt-1.5 pt-1 border-t border-slate-100 flex items-center justify-between text-[9px] font-bold">
                 <span className="text-slate-400">Deadline</span>
-                <span className="text-[#111827] font-mono">Due {clock(v.due)}</span>
+                <span className="text-[#111827] font-mono">{clock(v.due)}</span>
               </div>
             </div>
           );
@@ -129,20 +130,20 @@ export default function FleetInspector({
 
       {/* Selected Vehicle Detailed Inspection Card */}
       {currentVehicle && (
-        <div className="bg-white border-2 border-[#111827] rounded-2xl p-4 sm:p-5 shadow-[4px_4px_0px_#111827] space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
-            <div className="flex items-center gap-3">
+        <div className="bg-white border-2 border-[#111827] rounded-xl p-3 sm:p-4 shadow-[2.5px_2.5px_0px_#111827] space-y-2.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
+            <div className="flex items-center gap-2.5">
               <span
-                className="text-white text-xs font-black px-3 py-1 rounded-lg"
+                className="text-white text-xs font-black px-2.5 py-0.5 rounded-lg"
                 style={{ backgroundColor: getColor(currentIdx) }}
               >
                 {currentVehicle.id}
               </span>
               <div>
-                <h4 className="text-sm sm:text-base font-black text-[#111827]">
+                <h4 className="text-sm font-black text-[#111827]">
                   {currentVehicle.name || currentVehicle.model}
                 </h4>
-                <p className="text-xs text-[#64748B]">
+                <p className="text-[11px] text-[#64748B]">
                   Arrived 10:00 · Departure Deadline: {clock(currentVehicle.due)} ({currentVehicle.due}h stay)
                 </p>
               </div>
@@ -150,13 +151,13 @@ export default function FleetInspector({
 
             <div className="flex items-center gap-2">
               {onTime ? (
-                <span className="bg-[#55BD8D] text-white text-xs font-black px-3 py-1 rounded-xl border border-[#111827] flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
+                <span className="bg-[#55BD8D] text-white text-[11px] font-black px-2.5 py-0.5 rounded-lg border border-[#111827] flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
                   <span>On-Time Target Met</span>
                 </span>
               ) : (
-                <span className="bg-[#E83D62] text-white text-xs font-black px-3 py-1 rounded-xl border border-[#111827] flex items-center gap-1.5">
-                  <AlertCircle className="w-3.5 h-3.5" />
+                <span className="bg-[#E83D62] text-white text-[11px] font-black px-2.5 py-0.5 rounded-lg border border-[#111827] flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
                   <span>Shortfall: -{unmet.toFixed(1)} kWh</span>
                 </span>
               )}
@@ -164,7 +165,7 @@ export default function FleetInspector({
           </div>
 
           {/* Metrics Row */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
             <div className="bg-[#F8FAFC] border border-[#111827] rounded-xl p-3">
               <span className="text-[10px] font-bold text-slate-500 uppercase block">Battery Capacity</span>
               <span className="text-sm font-black font-mono text-[#111827]">
